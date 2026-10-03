@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#8b1e2d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
+<title>大須大道町人祭 NOW</title>
+</head>
+<body>
+<header class="appbar">
+  <div><div class="eyebrow">第47回</div><h1>大須大道町人祭 <span>NOW</span></h1><div class="dates">10/9(金) 前夜祭　10/10(土)・11(日)</div></div>
+</header>
+<main>
+<section id="home" class="page active">
+  <div class="now-head"><div><div class="eyebrow">いま大須で</div><h2 id="nowClock">--:--</h2></div><div id="nowDate" class="now-date">----</div></div>
+  <div id="nowSection"></div>
+  <div class="section-title"><h2>このあと</h2><button id="refreshBtn" class="text-btn">↻ 更新</button></div>
+  <div id="nextList" class="event-list"></div>
+  <div class="section-title"><h2>今日のタイムライン</h2></div>
+  <div id="todayList" class="event-list"></div>
+</section>
+<section id="schedule" class="page"><div class="section-head"><h2>タイムテーブル</h2><select id="dateFilter"><option value="">すべての日</option><option value="2026-10-09">10/9(金)</option><option value="2026-10-10">10/10(土)</option><option value="2026-10-11">10/11(日)</option></select></div><div id="scheduleList" class="event-list"></div></section>
+<section id="venues" class="page"><div class="section-head"><h2>会場</h2></div><div class="hint">大須は徒歩圏内。ここでは移動ルートより、各会場で何があるかを確認します。</div><div id="venueList" class="venue-list"></div></section>
+<section id="favorites" class="page"><div class="section-head"><h2>お気に入り</h2></div><div id="favoriteList" class="event-list"></div></section>
+</main>
+<nav class="bottom-nav"><button class="nav active" data-page="home">●<span>NOW</span></button><button class="nav" data-page="schedule">◷<span>予定</span></button><button class="nav" data-page="venues">⌖<span>会場</span></button><button class="nav" data-page="favorites">★<span>お気に入り</span></button></nav>
+<script type="module" src="app.js"></script>
+<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body></html>
