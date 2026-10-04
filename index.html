@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#8b1e2d">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="style.css">
 <title>大須大道町人祭 NOW</title>
 </head>
@@ -22,10 +23,11 @@
   <div id="todayList" class="event-list"></div>
 </section>
 <section id="schedule" class="page"><div class="section-head"><h2>タイムテーブル</h2><select id="dateFilter"><option value="">すべての日</option><option value="2026-10-09">10/9(金)</option><option value="2026-10-10">10/10(土)</option><option value="2026-10-11">10/11(日)</option></select></div><div id="scheduleList" class="event-list"></div></section>
-<section id="venues" class="page"><div class="section-head"><h2>会場</h2></div><div class="hint">大須は徒歩圏内。ここでは移動ルートより、各会場で何があるかを確認します。</div><div id="venueList" class="venue-list"></div></section>
+<section id="venues" class="page"><div class="section-head"><h2>会場</h2></div><div class="hint">会場が多いので地図で位置関係を確認できます。移動ルートではなく、各会場の場所を見るための地図です。</div><div id="venueMap" class="venue-map"></div><div id="venueList" class="venue-list"></div></section>
 <section id="favorites" class="page"><div class="section-head"><h2>お気に入り</h2></div><div id="favoriteList" class="event-list"></div></section>
 </main>
 <nav class="bottom-nav"><button class="nav active" data-page="home">●<span>NOW</span></button><button class="nav" data-page="schedule">◷<span>予定</span></button><button class="nav" data-page="venues">⌖<span>会場</span></button><button class="nav" data-page="favorites">★<span>お気に入り</span></button></nav>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script type="module" src="app.js"></script>
 <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
 </body></html>
