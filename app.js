@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://pwtmblzenkxrilvsesak.supabase.co";
 const SUPABASE_KEY = "sb_publishable_1xXRoGWj2Kz-mIlUB_AvWw_Ge8odQN_";
 const $ = (s) => document.querySelector(s);
-let events = [], venues = [];
+let events = [], venues = [], venueMap = null, venueMarkers = [];
 const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
 
 async function api(table, params="") {
@@ -61,6 +61,22 @@ function renderSchedule() {
   bindFavs();
 }
 function renderVenues() {
+  const mapped=venues.filter(v=>v.latitude!=null&&v.longitude!=null);
+  if(window.L && mapped.length){
+    if(!venueMap){
+      venueMap=L.map("venueMap",{scrollWheelZoom:false}).setView([35.1597,136.9020],16);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(venueMap);
+    }
+    venueMarkers.forEach(m=>m.remove());
+    venueMarkers=[];
+    const bounds=[];
+    mapped.forEach(v=>{
+      const m=L.marker([Number(v.latitude),Number(v.longitude)]).addTo(venueMap).bindPopup("<strong>"+esc(v.name)+"</strong>");
+      venueMarkers.push(m); bounds.push([Number(v.latitude),Number(v.longitude)]);
+    });
+    if(bounds.length) venueMap.fitBounds(bounds,{padding:[24,24]});
+    setTimeout(()=>venueMap.invalidateSize(),50);
+  }
   $("#venueList").innerHTML=venues.map(v=>'<article class="venue"><div class="pin">📍</div><div><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p></div></article>').join("");
 }
 function renderFavorites() {
