@@ -193,7 +193,7 @@ async function routeToVenue(id){
   },err=>{
     const message=err.code===1?"現在地の利用が許可されていません。":err.code===2?"現在地を取得できませんでした。":"現在地の取得がタイムアウトしました。";
     setRouteStatus(message,"error");
-  },{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
+  },{enableHighAccuracy:false,timeout:5000,maximumAge:60000});
 }
 function highlightVenue(id){
   document.querySelectorAll(".venue").forEach(el=>el.classList.toggle("selected",Number(el.dataset.venueId)===Number(id)));
