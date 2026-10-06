@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://pwtmblzenkxrilvsesak.supabase.co";
 const SUPABASE_KEY = "sb_publishable_1xXRoGWj2Kz-mIlUB_AvWw_Ge8odQN_";
 const $ = (s) => document.querySelector(s);
-let events = [], venues = [], venueMap = null, venueMarkers = [];
+let events = [], venues = [], venueMap = null, venueMarkers = [], venueMarkerById = new Map();
 const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
 
 async function api(table, params="") {
@@ -71,7 +71,9 @@ function renderSchedule() {
   bindFavs();
 }
 function renderVenues() {
-  const mapped=venues.filter(v=>v.latitude!=null&&v.longitude!=null);
+  const ordered=[...venues].sort((a,b)=>(a.sort_order??999)-(b.sort_order??999));
+  const venueNumbers=new Map(ordered.map((v,i)=>[v.id,i+1]));
+  const mapped=ordered.filter(v=>v.latitude!=null&&v.longitude!=null);
   if(window.L && mapped.length){
     if(!venueMap){
       venueMap=L.map("venueMap",{scrollWheelZoom:false}).setView([35.1597,136.9020],16);
@@ -79,15 +81,28 @@ function renderVenues() {
     }
     venueMarkers.forEach(m=>m.remove());
     venueMarkers=[];
+    venueMarkerById=new Map();
     const bounds=[];
     mapped.forEach(v=>{
-      const m=L.marker([Number(v.latitude),Number(v.longitude)]).addTo(venueMap).bindPopup("<strong>"+esc(v.name)+"</strong>");
-      venueMarkers.push(m); bounds.push([Number(v.latitude),Number(v.longitude)]);
+      const n=venueNumbers.get(v.id);
+      const icon=L.divIcon({className:"venue-number-icon",html:"<span>"+n+"</span>",iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-17]});
+      const m=L.marker([Number(v.latitude),Number(v.longitude)],{icon,title:v.name}).addTo(venueMap).bindPopup("<strong>"+n+". "+esc(v.name)+"</strong>");
+      m.on("click",()=>highlightVenue(v.id));
+      venueMarkers.push(m); venueMarkerById.set(v.id,m); bounds.push([Number(v.latitude),Number(v.longitude)]);
     });
     if(bounds.length) venueMap.fitBounds(bounds,{padding:[24,24]});
     setTimeout(()=>venueMap.invalidateSize(),50);
   }
-  $("#venueList").innerHTML=venues.map(v=>'<article class="venue"><div class="pin">📍</div><div><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p></div></article>').join("");
+  $("#venueList").innerHTML=ordered.map((v,i)=>'<article class="venue" id="venue-'+v.id+'" data-venue-id="'+v.id+'"><div class="pin">'+(i+1)+'</div><div><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p></div></article>').join("");
+  document.querySelectorAll("[data-venue-id]").forEach(el=>el.onclick=()=>{
+    const id=Number(el.dataset.venueId), marker=venueMarkerById.get(id);
+    if(marker && venueMap){ venueMap.setView(marker.getLatLng(),Math.max(venueMap.getZoom(),17),{animate:true}); marker.openPopup(); }
+    highlightVenue(id);
+  });
+}
+function highlightVenue(id){
+  document.querySelectorAll(".venue").forEach(el=>el.classList.toggle("selected",Number(el.dataset.venueId)===Number(id)));
+  const el=$("#venue-"+id); if(el) el.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function renderFavorites() {
   const a=unique(events.filter(e=>favs.has(e.id)));
