@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://pwtmblzenkxrilvsesak.supabase.co";
 const SUPABASE_KEY = "sb_publishable_1xXRoGWj2Kz-mIlUB_AvWw_Ge8odQN_";
 const $ = (s) => document.querySelector(s);
-let events = [], venues = [], venueMap = null, venueMarkers = [], venueMarkerById = new Map();
+let events = [], venues = [], venueMap = null, venueMarkers = [], venueMarkerById = new Map(), routeLine = null, currentLocationMarker = null, routeTargetId = null;
 const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
 
 async function api(table, params="") {
@@ -93,12 +93,18 @@ function renderVenues() {
     if(bounds.length) venueMap.fitBounds(bounds,{padding:[24,24]});
     setTimeout(()=>venueMap.invalidateSize(),50);
   }
-  $("#venueList").innerHTML=ordered.map((v,i)=>'<article class="venue" id="venue-'+v.id+'" data-venue-id="'+v.id+'"><div class="pin">'+(i+1)+'</div><div><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p></div></article>').join("");
+  $("#venueList").innerHTML=ordered.map((v,i)=>'<article class="venue" id="venue-'+v.id+'" data-venue-id="'+v.id+'"><div class="pin">'+(i+1)+'</div><div class="venue-body"><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p>'+(v.latitude!=null&&v.longitude!=null?'<button type="button" class="route-btn" data-route="'+v.id+'">📍 ここへ案内</button>':"")+'</div></article>').join("");
   document.querySelectorAll("[data-venue-id]").forEach(el=>el.onclick=(ev)=>{
+    if(ev.target.closest("[data-route]")) return;
     ev.preventDefault();
     const id=Number(el.dataset.venueId);
     highlightVenue(id);
     focusVenueOnMap(id);
+  });
+  document.querySelectorAll("[data-route]").forEach(btn=>btn.onclick=(ev)=>{
+    ev.preventDefault();
+    ev.stopPropagation();
+    routeToVenue(Number(btn.dataset.route));
   });
 }
 function focusVenueOnMap(id){
@@ -112,6 +118,82 @@ function focusVenueOnMap(id){
     marker.openPopup();
     setTimeout(()=>venueMap.setView(latlng,Math.max(venueMap.getZoom(),17),{animate:false}),300);
   }
+}
+
+function setRouteStatus(message, type=""){
+  const el=$("#routeStatus");
+  if(!el) return;
+  el.className="route-status"+(type?" "+type:"");
+  el.textContent=message||"";
+}
+
+function clearRoute(){
+  if(routeLine && venueMap){ venueMap.removeLayer(routeLine); }
+  routeLine=null;
+  if(currentLocationMarker && venueMap){ venueMap.removeLayer(currentLocationMarker); }
+  currentLocationMarker=null;
+  routeTargetId=null;
+}
+
+async function routeToVenue(id){
+  const target=venues.find(v=>Number(v.id)===Number(id));
+  if(!target || target.latitude==null || target.longitude==null){
+    setRouteStatus("この会場には位置情報が設定されていないため、ルートを表示できません。","error");
+    return;
+  }
+  if(!venueMap || !window.L){ return; }
+  if(!("geolocation" in navigator)){
+    setRouteStatus("この端末では現在地を取得できません。","error");
+    return;
+  }
+  routeTargetId=id;
+  focusVenueOnMap(id);
+  setRouteStatus("現在地を取得しています…","loading");
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude;
+    const lon=pos.coords.longitude;
+    const accuracy=Math.round(pos.coords.accuracy||0);
+    try{
+      const body={
+        locations:[{lat,lon},{lat:Number(target.latitude),lon:Number(target.longitude)}],
+        costing:"pedestrian",
+        units:"kilometers",
+        language:"ja-JP",
+        directions_type:"instructions",
+        format:"osrm",
+        shape_format:"geojson"
+      };
+      const res=await fetch("https://valhalla1.openstreetmap.de/route",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","X-Client-Id":"OsuDaidochoninMatsuri/2026"},
+        body:JSON.stringify(body)
+      });
+      if(!res.ok) throw new Error("ルートサーバー: HTTP "+res.status);
+      const data=await res.json();
+      const route=data?.routes?.[0];
+      if(!route?.geometry?.coordinates?.length) throw new Error(data?.error||"徒歩ルートが見つかりませんでした。");
+      clearRoute();
+      routeTargetId=id;
+      currentLocationMarker=L.circleMarker([lat,lon],{
+        radius:8,weight:3,fillOpacity:.9,fillColor:"#2b7de9",color:"#fff"
+      }).addTo(venueMap).bindPopup("現在地（精度 約"+accuracy+"m）");
+      routeLine=L.geoJSON(route.geometry,{style:{color:"#8b1e2d",weight:6,opacity:.85}}).addTo(venueMap);
+      const summary=route.summary||{};
+      const km=Number(summary.length||0);
+      const min=Math.max(1,Math.round(Number(summary.time||0)/60));
+      setRouteStatus("徒歩 約"+(km<1?Math.round(km*1000)+"m":km.toFixed(1)+"km")+"・約"+min+"分 → "+target.name,"success");
+      const bounds=routeLine.getBounds();
+      if(bounds.isValid()) venueMap.fitBounds(bounds,{padding:[36,36],maxZoom:18});
+      const marker=venueMarkerById.get(id);
+      if(marker) marker.openPopup();
+    }catch(e){
+      console.error(e);
+      setRouteStatus("ルート取得に失敗しました: "+e.message,"error");
+    }
+  },err=>{
+    const message=err.code===1?"現在地の利用が許可されていません。":err.code===2?"現在地を取得できませんでした。":"現在地の取得がタイムアウトしました。";
+    setRouteStatus(message,"error");
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
 }
 function highlightVenue(id){
   document.querySelectorAll(".venue").forEach(el=>el.classList.toggle("selected",Number(el.dataset.venueId)===Number(id)));
