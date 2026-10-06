@@ -77,7 +77,7 @@ function renderVenues() {
   if(window.L && mapped.length){
     if(!venueMap){
       venueMap=L.map("venueMap",{scrollWheelZoom:false}).setView([35.1597,136.9020],16);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(venueMap);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© OpenStreetMap contributors',referrerPolicy:'strict-origin-when-cross-origin'}).addTo(venueMap);
     }
     venueMarkers.forEach(m=>m.remove());
     venueMarkers=[];
