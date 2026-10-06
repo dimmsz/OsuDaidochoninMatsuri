@@ -143,6 +143,8 @@ function renderVenues() {
     ev.preventDefault();
     const id=Number(el.dataset.venueId);
     highlightVenue(id);
+    const mapEl=$("#venueMap");
+    if(mapEl) mapEl.scrollIntoView({behavior:"smooth",block:"center"});
     focusVenueOnMap(id);
   });
   document.querySelectorAll("[data-route]").forEach(btn=>btn.onclick=(ev)=>{
