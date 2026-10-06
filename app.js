@@ -85,7 +85,7 @@ function renderVenues() {
     const bounds=[];
     mapped.forEach(v=>{
       const n=venueNumbers.get(v.id);
-      const icon=L.divIcon({className:"venue-number-icon",html:"<span>"+n+"</span>",iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-17]});
+      const icon=L.divIcon({className:"venue-number-icon",html:"<span><b>"+n+"</b></span>",iconSize:[34,42],iconAnchor:[17,41],popupAnchor:[0,-24]});
       const m=L.marker([Number(v.latitude),Number(v.longitude)],{icon,title:v.name}).addTo(venueMap).bindPopup("<strong>"+n+". "+esc(v.name)+"</strong>");
       m.on("click",()=>highlightVenue(v.id));
       venueMarkers.push(m); venueMarkerById.set(v.id,m); bounds.push([Number(v.latitude),Number(v.longitude)]);
