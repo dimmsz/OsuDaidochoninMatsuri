@@ -42,10 +42,13 @@ function card(e,now=false) {
   const tagMarkup=(genre||eventTags.length)
     ? '<div class="event-tags">'+(genre?'<span class="event-genre">'+esc(genre)+'</span>':"")+eventTags.filter(t=>t!==genre).slice(0,4).map(t=>'<span class="event-tag">'+esc(t)+'</span>').join("")+'</div>'
     : "";
-  return '<article class="event '+(now?"event-now":"")+'"><div class="event-time">'+t+'<small>'+en+'</small></div><div><div class="event-title">'+esc(e.title)+'</div>'+
+  const performer=e.performer||e.title;
+  const titleSub=e.performer&&e.title!==e.performer?e.title:"";
+  return '<article class="event '+(now?"event-now":"")+'"><div class="event-time">'+t+'<small>'+en+'</small></div><div><div class="event-title">'+esc(performer)+'</div>'+
+    (titleSub?'<div class="event-subtitle">'+esc(titleSub)+'</div>':"")+
     (now?'<span class="live-pill">● 開催中</span>':status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
     '<div class="meta">📍 '+esc(v?.name||"会場未定")+'</div>'+
-    (e.performer&&e.title!==e.performer?'<div class="performer">'+esc(e.performer)+'</div>':"")+tagMarkup+
+    tagMarkup+
     '</div><button class="fav '+(fav?"on":"")+'" data-fav="'+e.id+'">'+(fav?"★":"☆")+'</button></article>';
 }
 function renderNow() {
