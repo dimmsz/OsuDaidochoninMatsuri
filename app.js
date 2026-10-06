@@ -94,11 +94,24 @@ function renderVenues() {
     setTimeout(()=>venueMap.invalidateSize(),50);
   }
   $("#venueList").innerHTML=ordered.map((v,i)=>'<article class="venue" id="venue-'+v.id+'" data-venue-id="'+v.id+'"><div class="pin">'+(i+1)+'</div><div><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p></div></article>').join("");
-  document.querySelectorAll("[data-venue-id]").forEach(el=>el.onclick=()=>{
-    const id=Number(el.dataset.venueId), marker=venueMarkerById.get(id);
-    if(marker && venueMap){ venueMap.setView(marker.getLatLng(),Math.max(venueMap.getZoom(),17),{animate:true}); marker.openPopup(); }
+  document.querySelectorAll("[data-venue-id]").forEach(el=>el.onclick=(ev)=>{
+    ev.preventDefault();
+    const id=Number(el.dataset.venueId);
     highlightVenue(id);
+    focusVenueOnMap(id);
   });
+}
+function focusVenueOnMap(id){
+  const v=venues.find(x=>Number(x.id)===Number(id));
+  if(!venueMap || !v || v.latitude==null || v.longitude==null) return;
+  const latlng=L.latLng(Number(v.latitude),Number(v.longitude));
+  venueMap.invalidateSize({animate:false});
+  venueMap.setView(latlng,Math.max(venueMap.getZoom(),17),{animate:true,duration:0.25});
+  const marker=venueMarkerById.get(id);
+  if(marker){
+    marker.openPopup();
+    setTimeout(()=>venueMap.setView(latlng,Math.max(venueMap.getZoom(),17),{animate:false}),300);
+  }
 }
 function highlightVenue(id){
   document.querySelectorAll(".venue").forEach(el=>el.classList.toggle("selected",Number(el.dataset.venueId)===Number(id)));
