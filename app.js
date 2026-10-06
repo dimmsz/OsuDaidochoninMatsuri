@@ -1,8 +1,9 @@
 const SUPABASE_URL = "https://pwtmblzenkxrilvsesak.supabase.co";
 const SUPABASE_KEY = "sb_publishable_1xXRoGWj2Kz-mIlUB_AvWw_Ge8odQN_";
 const $ = (s) => document.querySelector(s);
-let events = [], venues = [], venueMap = null, venueMarkers = [], venueMarkerById = new Map(), routeLine = null, currentLocationMarker = null, routeTargetId = null;
+let events = [], venues = [], tagsByEvent = new Map(), venueMap = null, venueMarkers = [], venueMarkerById = new Map(), routeLine = null, currentLocationMarker = null, routeTargetId = null;
 const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
+const PRESET_TAGS = ["大道芸","屋外","昼公演","夜公演","身体表現","音楽","ダンス","ジャグリング","サーカス","コメディ","マジック","伝統","パントマイム","バルーン","からくり人形","太鼓","アイドル","プロレス","金粉","特別企画","大型演目","短時間演目"];
 
 async function api(table, params="") {
   const r = await fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + params, {
@@ -36,10 +37,15 @@ function card(e,now=false) {
   const t=e.start_time?.slice(0,5)||"";
   const en=e.end_time ? "–"+e.end_time.slice(0,5) : (e.duration_minutes||30)+"分";
   const fav=favs.has(e.id);
+  const eventTags=(tagsByEvent.get(Number(e.id))||[]).filter(t=>PRESET_TAGS.includes(t));
+  const genre=e.genre||"";
+  const tagMarkup=(genre||eventTags.length)
+    ? '<div class="event-tags">'+(genre?'<span class="event-genre">'+esc(genre)+'</span>':"")+eventTags.filter(t=>t!==genre).slice(0,4).map(t=>'<span class="event-tag">'+esc(t)+'</span>').join("")+'</div>'
+    : "";
   return '<article class="event '+(now?"event-now":"")+'"><div class="event-time">'+t+'<small>'+en+'</small></div><div><div class="event-title">'+esc(e.title)+'</div>'+
     (now?'<span class="live-pill">● 開催中</span>':status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
     '<div class="meta">📍 '+esc(v?.name||"会場未定")+'</div>'+
-    (e.performer&&e.title!==e.performer?'<div class="performer">'+esc(e.performer)+'</div>':"")+
+    (e.performer&&e.title!==e.performer?'<div class="performer">'+esc(e.performer)+'</div>':"")+tagMarkup+
     '</div><button class="fav '+(fav?"on":"")+'" data-fav="'+e.id+'">'+(fav?"★":"☆")+'</button></article>';
 }
 function renderNow() {
@@ -227,10 +233,18 @@ async function load() {
     const f=await api("festivals","select=id&name=eq.%E7%AC%AC47%E5%9B%9E%20%E5%A4%A7%E9%A0%88%E5%A4%A7%E9%81%93%E7%94%BA%E4%BA%BA%E7%A5%AD&limit=1");
     const id=f[0]?.id;
     if(!id) throw Error("festival not found");
-    [venues,events]=await Promise.all([
+    let tagRows=[];
+    [venues,events,tagRows]=await Promise.all([
       api("venues","select=*&festival_id=eq."+id+"&order=sort_order"),
-      api("events","select=*&festival_id=eq."+id+"&order=event_date,start_time,sort_order")
+      api("events","select=*&festival_id=eq."+id+"&order=event_date,start_time,sort_order"),
+      api("event_tags","select=event_id,tag")
     ]);
+    tagsByEvent=new Map();
+    for(const row of tagRows||[]){
+      const key=Number(row.event_id);
+      if(!tagsByEvent.has(key)) tagsByEvent.set(key,[]);
+      if(row.tag && !tagsByEvent.get(key).includes(row.tag)) tagsByEvent.get(key).push(row.tag);
+    }
     events=unique(events);
     renderVenueFilter();
     renderNow(); renderSchedule(); renderVenues();
