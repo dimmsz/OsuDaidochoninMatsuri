@@ -54,10 +54,20 @@ function renderNow() {
   $("#todayList").innerHTML=today.length?today.sort((a,b)=>start(a)-start(b)).map(e=>card(e)).join(""):'<div class="empty">今日は祭りの登録イベント日ではありません。</div>';
   bindFavs();
 }
+function renderVenueFilter() {
+  const select=$("#venueFilter");
+  if(!select) return;
+  const current=select.value;
+  const names=[...venues].sort((a,b)=>(a.sort_order??999)-(b.sort_order??999));
+  select.innerHTML='<option value="">すべての会場</option>'+names.map(v=>'<option value="'+v.id+'">'+esc(v.name)+'</option>').join("");
+  if(names.some(v=>String(v.id)===current)) select.value=current;
+}
 function renderSchedule() {
   const d=$("#dateFilter").value;
-  const a=unique(events.filter(e=>!d||e.event_date===d)).sort((x,y)=>(x.event_date+x.start_time).localeCompare(y.event_date+y.start_time));
-  $("#scheduleList").innerHTML=a.length?a.map(card).join(""):'<div class="empty">イベントがありません。</div>';
+  const venueId=$("#venueFilter").value;
+  const a=unique(events.filter(e=>(!d||e.event_date===d)&&(!venueId||String(e.venue_id)===venueId)))
+    .sort((x,y)=>(x.event_date+x.start_time).localeCompare(y.event_date+y.start_time));
+  $("#scheduleList").innerHTML=a.length?a.map(card).join(""):'<div class="empty">この条件のイベントはありません。</div>';
   bindFavs();
 }
 function renderVenues() {
@@ -100,6 +110,7 @@ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
   if(b.dataset.page==="favorites")renderFavorites();
 });
 $("#dateFilter").onchange=renderSchedule;
+$("#venueFilter").onchange=renderSchedule;
 $("#refreshBtn").onclick=load;
 async function load() {
   try {
@@ -111,6 +122,7 @@ async function load() {
       api("events","select=*&festival_id=eq."+id+"&order=event_date,start_time,sort_order")
     ]);
     events=unique(events);
+    renderVenueFilter();
     renderNow(); renderSchedule(); renderVenues();
   } catch(e) {
     console.error(e);
