@@ -76,6 +76,44 @@ function renderSchedule() {
   $("#scheduleList").innerHTML=a.length?a.map(card).join(""):'<div class="empty">この条件のイベントはありません。</div>';
   bindFavs();
 }
+function renderSearchOptions(){
+  const genreSelect=$("#searchGenre");
+  const tagSelect=$("#searchTag");
+  if(genreSelect){
+    const current=genreSelect.value;
+    const genres=[...new Set(events.map(e=>e.genre).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
+    genreSelect.innerHTML='<option value="">すべて</option>'+genres.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join("");
+    if(genres.includes(current)) genreSelect.value=current;
+  }
+  if(tagSelect){
+    const current=tagSelect.value;
+    tagSelect.innerHTML='<option value="">すべて</option>'+PRESET_TAGS.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join("");
+    if(PRESET_TAGS.includes(current)) tagSelect.value=current;
+  }
+}
+function renderSearch(){
+  const genre=$("#searchGenre")?.value||"";
+  const tag=$("#searchTag")?.value||"";
+  const raw=$("#searchKeyword")?.value?.trim()||"";
+  const keywords=raw.toLocaleLowerCase("ja-JP").split(/\s+/).filter(Boolean);
+  const result=unique(events.filter(e=>{
+    if(genre && e.genre!==genre) return false;
+    const eventTags=(tagsByEvent.get(Number(e.id))||[]);
+    if(tag && !eventTags.includes(tag)) return false;
+    if(keywords.length){
+      const v=venues.find(x=>x.id===e.venue_id);
+      const hay=[
+        e.title,e.performer,e.description,e.genre,e.category,e.notes,
+        v?.name,...eventTags
+      ].filter(Boolean).join(" ").toLocaleLowerCase("ja-JP");
+      if(!keywords.every(k=>hay.includes(k))) return false;
+    }
+    return true;
+  })).sort((x,y)=>(x.event_date+x.start_time).localeCompare(y.event_date+y.start_time));
+  $("#searchSummary").textContent=result.length+"件";
+  $("#searchList").innerHTML=result.length?result.map(card).join(""):'<div class="empty">条件に一致するイベントはありません。</div>';
+  bindFavs();
+}
 function renderVenues() {
   const ordered=[...venues].sort((a,b)=>(a.sort_order??999)-(b.sort_order??999));
   const venueNumbers=new Map(ordered.map((v,i)=>[v.id,i+1]));
@@ -223,10 +261,20 @@ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n===b));
   if(b.dataset.page==="schedule")renderSchedule();
   if(b.dataset.page==="venues")renderVenues();
+  if(b.dataset.page==="search"){ renderSearchOptions(); renderSearch(); }
   if(b.dataset.page==="favorites")renderFavorites();
 });
 $("#dateFilter").onchange=renderSchedule;
 $("#venueFilter").onchange=renderSchedule;
+$("#searchGenre").onchange=renderSearch;
+$("#searchTag").onchange=renderSearch;
+$("#searchKeyword").oninput=renderSearch;
+$("#searchClear").onclick=()=>{
+  $("#searchGenre").value="";
+  $("#searchTag").value="";
+  $("#searchKeyword").value="";
+  renderSearch();
+};
 $("#refreshBtn").onclick=load;
 async function load() {
   try {
@@ -247,7 +295,8 @@ async function load() {
     }
     events=unique(events);
     renderVenueFilter();
-    renderNow(); renderSchedule(); renderVenues();
+    renderSearchOptions();
+    renderNow(); renderSchedule(); renderVenues(); renderSearch();
   } catch(e) {
     console.error(e);
     $("#nowSection").innerHTML='<div class="empty">データを読み込めませんでした。<br><small>'+esc(e.message)+'</small></div>';
