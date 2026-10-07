@@ -31,7 +31,10 @@ function timeText(e){
   const en=e.end_time?.slice(0,5);
   return en ? st+"–"+en : st;
 }
-function venueName(e){ return venues.find(v=>Number(v.id)===Number(e.venue_id))?.name || "会場未定"; }
+function venueName(e){
+  const v=venues.find(v=>Number(v.id)===Number(e.venue_id));
+  return (v?.name||"会場未定")+(e.venue_section?"・"+e.venue_section:"");
+}
 
 function genreOptions(){
   const genres=[...new Set(performers.map(p=>p.genre).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
