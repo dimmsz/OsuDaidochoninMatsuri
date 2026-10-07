@@ -79,12 +79,30 @@ function socialLinks(p){
   return out.length?'<div class="performer-links">'+out.join("")+'</div>':"";
 }
 
+function performerSchedule(id){
+  const ids=new Set((linksByPerformer.get(Number(id))||[]).map(x=>Number(x.event_id)));
+  return events.filter(e=>ids.has(Number(e.id)))
+    .sort((a,b)=>(a.event_date+a.start_time).localeCompare(b.event_date+b.start_time));
+}
+
+function updateBulkFavoriteButton(schedule){
+  const button=$("#performerBulkFavorite");
+  if(!button) return;
+  if(!schedule.length){
+    button.disabled=true;
+    button.textContent="☆ 一括お気に入り登録";
+    return;
+  }
+  button.disabled=false;
+  const allFav=schedule.every(e=>favs.has(Number(e.id)));
+  button.textContent=allFav?"★ 一括お気に入り解除":"☆ 一括お気に入り登録";
+}
+
 function showDetail(id){
   const p=performers.find(x=>Number(x.id)===Number(id));
   if(!p) return;
-  const ids=new Set((linksByPerformer.get(Number(id))||[]).map(x=>Number(x.event_id)));
-  const schedule=events.filter(e=>ids.has(Number(e.id)))
-    .sort((a,b)=>(a.event_date+a.start_time).localeCompare(b.event_date+b.start_time));
+  const schedule=performerSchedule(Number(id));
+  updateBulkFavoriteButton(schedule);
 
   $("#performerIndex").hidden=true;
   $("#performerDetail").hidden=false;
@@ -120,6 +138,21 @@ function showDetail(id){
   });
   window.scrollTo({top:0,behavior:"smooth"});
 }
+
+$("#performerBulkFavorite").onclick=()=>{
+  const params=new URLSearchParams(location.search);
+  const id=Number(params.get("id"));
+  if(!id) return;
+  const schedule=performerSchedule(id);
+  if(!schedule.length) return;
+  const allFav=schedule.every(e=>favs.has(Number(e.id)));
+  for(const e of schedule){
+    const eventId=Number(e.id);
+    allFav?favs.delete(eventId):favs.add(eventId);
+  }
+  localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
+  showDetail(id);
+};
 
 $("#performerKeyword").oninput=renderList;
 $("#performerGenre").onchange=renderList;
