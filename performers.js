@@ -8,6 +8,7 @@ let events = [];
 let venues = [];
 let links = [];
 let linksByPerformer = new Map();
+const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
 
 async function api(table, params="") {
   const r = await fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + params, {
@@ -95,12 +96,28 @@ function showDetail(id){
       (p.description?'<p class="performer-description">'+esc(p.description)+'</p>':"")+
       socialLinks(p)+
     '</div>';
-  $("#performerSchedule").innerHTML=schedule.length?schedule.map(e=>
-    '<a class="performer-event" href="./#schedule">'+
-      '<div class="performer-event-date">'+dateText(e.event_date)+'<strong>'+esc(timeText(e))+'</strong></div>'+
-      '<div class="performer-event-main"><div class="event-title">'+esc(e.title||e.performer||"")+'</div><div class="meta">📍 '+esc(venueName(e))+'</div></div>'+
-    '</a>'
-  ).join(""):'<div class="empty">出演スケジュールが登録されていません。</div>';
+  $("#performerSchedule").innerHTML=schedule.length?schedule.map(e=>{
+    const isFav=favs.has(Number(e.id));
+    const title=e.title||e.performer||"";
+    const performer=e.performer && e.title!==e.performer ? e.performer : "";
+    return '<article class="event performer-schedule-card">'+
+      '<div class="event-time"><div class="event-date-label">'+esc(dateText(e.event_date))+'</div>'+esc(timeText(e))+'</div>'+
+      '<div>'+
+        '<div class="event-title">'+esc(title)+'</div>'+
+        (performer?'<div class="event-subtitle">'+esc(performer)+'</div>':"")+
+        '<div class="meta">'+esc(venueName(e))+'</div>'+
+      '</div>'+
+      '<button type="button" class="fav '+(isFav?"on":"")+'" data-fav="'+e.id+'" aria-label="お気に入り">'+(isFav?"★":"☆")+'</button>'+
+    '</article>';
+  }).join(""):'<div class="empty">出演スケジュールが登録されていません。</div>';
+  document.querySelectorAll("#performerSchedule [data-fav]").forEach(b=>b.onclick=ev=>{
+    ev.preventDefault();
+    ev.stopPropagation();
+    const id=Number(b.dataset.fav);
+    favs.has(id)?favs.delete(id):favs.add(id);
+    localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
+    showDetail(id===Number(p.id)?Number(p.id):Number(id===0?p.id:p.id));
+  });
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
