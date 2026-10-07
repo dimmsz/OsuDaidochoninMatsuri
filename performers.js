@@ -33,10 +33,10 @@ function timeText(e){
 }
 function venueName(e){
   const type=e.location_type||"fixed";
-  if(type==="roaming") return e.location_label||"ロービング";
-  if(type==="route") return e.location_label||"移動演目";
+  if(type==="roaming") return "🌀 "+(e.location_label||"ロービング");
+  if(type==="route") return "↔ "+(e.location_label||"移動演目");
   const v=venues.find(v=>Number(v.id)===Number(e.venue_id));
-  return (v?.name||"会場未定")+(e.venue_section?"・"+e.venue_section:"");
+  return "📍 "+(v?.name||"会場未定")+(e.venue_section?"・"+e.venue_section:"");
 }
 
 function genreOptions(){
