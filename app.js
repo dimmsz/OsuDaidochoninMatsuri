@@ -205,6 +205,7 @@ function renderVenues() {
       venueMarkers.push(m); venueMarkerById.set(v.id,m); bounds.push([Number(v.latitude),Number(v.longitude)]);
     });
     if(bounds.length) venueMap.fitBounds(bounds,{padding:[24,24]});
+    addMapControls();
     setTimeout(()=>venueMap.invalidateSize(),50);
   }
   $("#venueList").innerHTML=ordered.map((v,i)=>'<article class="venue" id="venue-'+v.id+'" data-venue-id="'+v.id+'"><div class="pin">'+(i+1)+'</div><div class="venue-body"><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p>'+(v.latitude!=null&&v.longitude!=null?'<button type="button" class="route-btn" data-route="'+v.id+'">📍 ここへ案内</button>':"")+'</div></article>').join("");
@@ -222,6 +223,37 @@ function renderVenues() {
     ev.stopPropagation();
     routeToVenue(Number(btn.dataset.route));
   });
+}
+function addMapControls(){
+  if(!venueMap || venueMap._osuMapControlsAdded) return;
+  const control=L.control({position:"topright"});
+  control.onAdd=function(){
+    const div=L.DomUtil.create("div","osu-map-controls");
+    div.innerHTML='<button type="button" class="map-control-btn" data-map-north title="北を上にする" aria-label="北を上にする">↑</button><button type="button" class="map-control-btn" data-map-location title="現在地へ移動" aria-label="現在地へ移動">⌖</button>';
+    L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.on(div.querySelector("[data-map-north]"),"click",()=>venueMap.setBearing?.(0));
+    L.DomEvent.on(div.querySelector("[data-map-location]"),"click",()=>{
+      if(!("geolocation" in navigator)){
+        setRouteStatus("この端末では現在地を取得できません。","error");
+        return;
+      }
+      setRouteStatus("現在地を取得しています…","loading");
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const lat=pos.coords.latitude, lon=pos.coords.longitude;
+        if(currentLocationMarker) currentLocationMarker.remove();
+        currentLocationMarker=L.circleMarker([lat,lon],{
+          radius:8,weight:3,fillOpacity:.9,fillColor:"#2b7de9",color:"#fff"
+        }).addTo(venueMap).bindPopup("現在地").openPopup();
+        venueMap.setView([lat,lon],Math.max(venueMap.getZoom(),17),{animate:true});
+        setRouteStatus("現在地を表示しています。","success");
+      },err=>{
+        setRouteStatus(err.code===1?"現在地の利用が許可されていません。":"現在地を取得できませんでした。","error");
+      },{enableHighAccuracy:false,timeout:5000,maximumAge:60000});
+    });
+    return div;
+  };
+  control.addTo(venueMap);
+  venueMap._osuMapControlsAdded=true;
 }
 function focusVenueOnMap(id){
   const v=venues.find(x=>Number(x.id)===Number(id));
