@@ -8,6 +8,7 @@ let events = [];
 let venues = [];
 let links = [];
 let linksByPerformer = new Map();
+let currentPerformerId = null;
 const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
 
 async function api(table, params="") {
@@ -101,6 +102,7 @@ function updateBulkFavoriteButton(schedule){
 function showDetail(id){
   const p=performers.find(x=>Number(x.id)===Number(id));
   if(!p) return;
+  currentPerformerId=Number(id);
   const schedule=performerSchedule(Number(id));
   updateBulkFavoriteButton(schedule);
 
@@ -144,14 +146,17 @@ function showDetail(id){
 
 $("#performerKeyword").oninput=renderList;
 $("#performerGenre").onchange=renderList;
-$("#favoriteAllBtn").onclick=()=>{
-  const p=performers.find(x=>Number(x.id)===Number(new URLSearchParams(location.search).get("id")));
-  if(!p) return;
-  const eventIds=(linksByPerformer.get(Number(p.id))||[]).map(x=>Number(x.event_id));
-  const allFav=eventIds.length>0 && eventIds.every(id=>favs.has(id));
-  eventIds.forEach(id=>allFav?favs.delete(id):favs.add(id));
+$("#performerBulkFavorite").onclick=()=>{
+  if(currentPerformerId==null) return;
+  const schedule=performerSchedule(currentPerformerId);
+  if(!schedule.length) return;
+  const allFav=schedule.every(e=>favs.has(Number(e.id)));
+  schedule.forEach(e=>{
+    const id=Number(e.id);
+    allFav?favs.delete(id):favs.add(id);
+  });
   localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
-  showDetail(Number(p.id));
+  showDetail(currentPerformerId,false);
 };
 
 $("#performerBack").onclick=()=>{
