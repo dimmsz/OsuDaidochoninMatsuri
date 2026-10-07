@@ -116,7 +116,7 @@ function showDetail(id){
     const id=Number(b.dataset.fav);
     favs.has(id)?favs.delete(id):favs.add(id);
     localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
-    showDetail(id===Number(p.id)?Number(p.id):Number(id===0?p.id:p.id));
+    showDetail(Number(p.id));
   });
   window.scrollTo({top:0,behavior:"smooth"});
 }
