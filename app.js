@@ -72,6 +72,52 @@ function card(e,now=false,showDate=false) {
     tagMarkup+
     '</div><button class="fav '+(fav?"on":"")+'" data-fav="'+e.id+'">'+(fav?"★":"☆")+'</button></article>';
 }
+function eventDateTime(e){
+  const [y,m,d]=e.event_date.split("-").map(Number);
+  const [hh,mm]=e.start_time.slice(0,5).split(":").map(Number);
+  return new Date(y,m-1,d,hh,mm,0,0);
+}
+function formatCountdown(target, now){
+  const diff=Math.max(0,target-now);
+  const total=Math.floor(diff/1000);
+  const days=Math.floor(total/86400);
+  const hours=Math.floor((total%86400)/3600);
+  const minutes=Math.floor((total%3600)/60);
+  if(days>0) return "あと"+days+"日"+(hours?hours+"時間":"");
+  if(hours>0) return "あと"+hours+"時間"+(minutes?minutes+"分":"");
+  return "あと"+Math.max(1,minutes)+"分";
+}
+function nextUpcoming(now){
+  return unique(events)
+    .filter(e=>eventDateTime(e)>=now)
+    .sort((a,b)=>eventDateTime(a)-eventDateTime(b)||start(a)-start(b));
+}
+function renderNextWatch(now){
+  const section=$("#nextWatchSection");
+  if(!section) return;
+  const upcoming=nextUpcoming(now);
+  const first=upcoming[0];
+  if(!first){
+    section.innerHTML='<div class="next-watch-card"><div class="next-watch-title">🎉 すべての登録イベントが終了しました</div><div class="next-watch-sub">お疲れさまでした！</div></div>';
+    return;
+  }
+  const firstTime=eventDateTime(first);
+  const isToday=first.event_date===dateKey(now);
+  const favoritesNext=upcoming.filter(e=>favs.has(e.id)).slice(0,2);
+  const top=upcoming.slice(0,3);
+  const heading=isToday?"次に何を見る？":"次の開催は "+scheduleDateText(first.event_date);
+  const countdown=firstTime>now?formatCountdown(firstTime,now):"開催中";
+  section.innerHTML=
+    '<div class="next-watch-card">'+
+      '<div class="next-watch-heading"><div><div class="eyebrow dark">おすすめの次の一手</div><h2>'+heading+'</h2></div><span class="countdown-pill">'+countdown+'</span></div>'+
+      '<div class="next-watch-list">'+top.map((e,i)=>'<div class="next-watch-item">'+
+        '<div class="next-watch-rank">'+(i+1)+'</div>'+
+        '<div class="next-watch-main"><div class="next-watch-time">'+esc(scheduleDateText(e.event_date))+' '+esc(e.start_time?.slice(0,5)||"")+'</div>'+performerMarkup(e)+(e.title&&e.title!==e.performer?'<div class="next-watch-act">'+esc(e.title)+'</div>':"")+'<div class="meta">'+esc(venueLabel(e))+'</div></div>'+
+        '<button class="fav '+(favs.has(e.id)?"on":"")+'" data-fav="'+e.id+'">'+(favs.has(e.id)?"★":"☆")+'</button>'+
+      '</div>').join("")+'</div>'+
+      (favoritesNext.length?'<div class="next-favorite-note">★ お気に入りの次回: '+favoritesNext.map(e=>esc(e.start_time.slice(0,5))+" "+esc(e.title||e.performer)).join(" ／ ")+'</div>':"")+
+    '</div>';
+}
 function renderNow() {
   const d=new Date();
   $("#nowClock").textContent=d.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
@@ -79,8 +125,8 @@ function renderNow() {
   const today=unique(events.filter(e=>e.event_date===dateKey(d)));
   const live=today.filter(e=>status(e,d)==="live");
   const next=today.filter(e=>status(e,d)==="next").sort((a,b)=>start(a)-start(b)).slice(0,6);
-  $("#nowSection").innerHTML=live.length?'<div class="now-label">🟢 いま開催中</div>'+live.map(e=>card(e,true)).join(""):'<div class="empty"><strong>いま開催中の登録イベントはありません</strong><br><small>次のイベントを確認しよう。</small></div>';
-  $("#nextList").innerHTML=next.length?next.map(e=>card(e)).join(""):'<div class="empty">このあとの登録イベントはありません。</div>';
+  $("#nowSection").innerHTML=live.length?'<div class="now-label">🟢 いま開催中</div>'+live.map(e=>card(e,true)).join(""):'<div class="empty"><strong>いま開催中の登録イベントはありません</strong><br><small>下の「次に何を見る？」を確認しよう。</small></div>';
+  renderNextWatch(d);
   $("#todayList").innerHTML=today.length?today.sort((a,b)=>start(a)-start(b)).map(e=>card(e)).join(""):'<div class="empty">今日は祭りの登録イベント日ではありません。</div>';
   bindFavs();
 }
