@@ -142,21 +142,6 @@ function showDetail(id){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-$("#performerBulkFavorite").onclick=()=>{
-  const params=new URLSearchParams(location.search);
-  const id=Number(params.get("id"));
-  if(!id) return;
-  const schedule=performerSchedule(id);
-  if(!schedule.length) return;
-  const allFav=schedule.every(e=>favs.has(Number(e.id)));
-  for(const e of schedule){
-    const eventId=Number(e.id);
-    allFav?favs.delete(eventId):favs.add(eventId);
-  }
-  localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
-  showDetail(id);
-};
-
 $("#performerKeyword").oninput=renderList;
 $("#performerGenre").onchange=renderList;
 $("#favoriteAllBtn").onclick=()=>{
