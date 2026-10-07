@@ -19,6 +19,10 @@ function dateKey(d=new Date()) {
 function mins(t) { if(!t) return null; const a=t.slice(0,5).split(":").map(Number); return a[0]*60+a[1]; }
 function start(e) { return mins(e.start_time); }
 function end(e) { return e.end_time ? mins(e.end_time) : start(e)+(Number(e.duration_minutes)||30); }
+function venueLabel(e) {
+  const v=venues.find(x=>x.id===e.venue_id);
+  return (v?.name||"会場未定")+(e.venue_section?"・"+e.venue_section:"");
+}
 function status(e,d=new Date()) {
   if(e.event_date!==dateKey(d)) return "other";
   const n=d.getHours()*60+d.getMinutes()+d.getSeconds()/60, s=start(e);
@@ -56,7 +60,7 @@ function card(e,now=false) {
     performerMarkup(e)+
     (titleSub?'<div class="event-subtitle">'+esc(titleSub)+'</div>':"")+
     (now?'<span class="live-pill">● 開催中</span>':status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
-    '<div class="meta">📍 '+esc(v?.name||"会場未定")+'</div>'+
+    '<div class="meta">📍 '+esc(venueLabel(e))+'</div>'+
     tagMarkup+
     '</div><button class="fav '+(fav?"on":"")+'" data-fav="'+e.id+'">'+(fav?"★":"☆")+'</button></article>';
 }
@@ -116,7 +120,7 @@ function renderSearch(){
       const v=venues.find(x=>x.id===e.venue_id);
       const hay=[
         e.title,e.performer,e.description,e.genre,e.category,e.notes,
-        v?.name,...eventTags
+        v?.name,e.venue_section,...eventTags
       ].filter(Boolean).join(" ").toLocaleLowerCase("ja-JP");
       if(!keywords.every(k=>hay.includes(k))) return false;
     }
