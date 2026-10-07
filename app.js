@@ -208,7 +208,7 @@ function renderVenues() {
     addMapControls();
     setTimeout(()=>venueMap.invalidateSize(),50);
   }
-  $("#venueList").innerHTML=ordered.map((v,i)=>'<article class="venue" id="venue-'+v.id+'" data-venue-id="'+v.id+'"><div class="pin">'+(i+1)+'</div><div class="venue-body"><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p>'+(v.latitude!=null&&v.longitude!=null?'<button type="button" class="route-btn" data-route="'+v.id+'">📍 ここへ案内</button>':"")+'</div></article>').join("");
+  $("#venueList").innerHTML=ordered.map((v,i)=>'<article class="venue" id="venue-'+v.id+'" data-venue-id="'+v.id+'"><div class="pin">'+(i+1)+'</div><div class="venue-body"><h3>'+esc(v.name)+'</h3><p>'+esc(v.description||"")+'</p><div class="venue-actions">'+(v.latitude!=null&&v.longitude!=null?'<button type="button" class="route-btn" data-route="'+v.id+'">📍 ここへ案内</button>':"")+'<button type="button" class="timetable-btn" data-timetable-venue="'+v.id+'">◷ タイムテーブルを見る</button></div></div></article>').join("");
   document.querySelectorAll("[data-venue-id]").forEach(el=>el.onclick=(ev)=>{
     if(ev.target.closest("[data-route]")) return;
     ev.preventDefault();
@@ -222,6 +222,17 @@ function renderVenues() {
     ev.preventDefault();
     ev.stopPropagation();
     routeToVenue(Number(btn.dataset.route));
+  });
+  document.querySelectorAll("[data-timetable-venue]").forEach(btn=>btn.onclick=(ev)=>{
+    ev.preventDefault();
+    ev.stopPropagation();
+    const venueId=String(btn.dataset.timetableVenue);
+    const filter=$("#venueFilter");
+    if(filter) filter.value=venueId;
+    document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="schedule"));
+    document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page==="schedule"));
+    renderSchedule();
+    window.scrollTo({top:0,behavior:"smooth"});
   });
 }
 function addMapControls(){
