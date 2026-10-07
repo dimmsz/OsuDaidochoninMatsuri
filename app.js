@@ -20,6 +20,9 @@ function mins(t) { if(!t) return null; const a=t.slice(0,5).split(":").map(Numbe
 function start(e) { return mins(e.start_time); }
 function end(e) { return e.end_time ? mins(e.end_time) : start(e)+(Number(e.duration_minutes)||30); }
 function venueLabel(e) {
+  const type=e.location_type||"fixed";
+  if(type==="roaming") return e.location_label||"ロービング";
+  if(type==="route") return e.location_label||"移動演目";
   const v=venues.find(x=>x.id===e.venue_id);
   return (v?.name||"会場未定")+(e.venue_section?"・"+e.venue_section:"");
 }
@@ -120,7 +123,7 @@ function renderSearch(){
       const v=venues.find(x=>x.id===e.venue_id);
       const hay=[
         e.title,e.performer,e.description,e.genre,e.category,e.notes,
-        v?.name,e.venue_section,...eventTags
+        v?.name,e.venue_section,e.location_label,e.location_type,...eventTags
       ].filter(Boolean).join(" ").toLocaleLowerCase("ja-JP");
       if(!keywords.every(k=>hay.includes(k))) return false;
     }
