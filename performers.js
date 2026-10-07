@@ -149,6 +149,7 @@ $("#performerBulkFavorite").onclick=()=>{
   const schedule=performerSchedule(currentPerformerId);
   if(!schedule.length) return;
   const allFav=schedule.every(e=>favs.has(Number(e.id)));
+  if(allFav && !window.confirm("この出演者の出演スケジュールをすべてお気に入りから解除しますか？")) return;
   schedule.forEach(e=>{
     const id=Number(e.id);
     allFav?favs.delete(id):favs.add(id);
