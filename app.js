@@ -31,7 +31,7 @@ function status(e,d=new Date()) {
 function unique(a) {
   const m=new Map();
   for(const e of a) {
-    const k=[e.event_date,e.start_time,e.performer||e.title].join("|");
+    const k=[e.event_date,e.start_time,e.venue_id,e.venue_section,e.performer||e.title,e.title].join("|");
     if(!m.has(k) || (e.notes && !m.get(k).notes)) m.set(k,e);
   }
   return [...m.values()];
