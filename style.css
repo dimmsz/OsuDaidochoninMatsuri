@@ -29,3 +29,5 @@
 .next-watch-item .fav{font-size:22px;padding:0}
 .next-favorite-note{margin-top:9px;font-size:11px;color:#725c50;font-weight:700}
 @media(max-width:420px){.next-watch-heading{align-items:flex-start}.countdown-pill{font-size:10px;padding:5px 7px}.next-watch-item{grid-template-columns:23px 1fr 32px}}
+
+.osu-map-controls{display:grid;gap:6px}.map-control-btn{width:36px;height:36px;border:0;border-radius:8px;background:#fff;color:#333;box-shadow:0 1px 5px #0004;font-size:20px;font-weight:800;line-height:1;cursor:pointer}.map-control-btn:active{transform:scale(.95)}
