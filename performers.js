@@ -73,9 +73,11 @@ function renderList(){
 
 function socialLinks(p){
   const out=[];
+  const xIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817-5.964 6.817H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/></svg>';
+  const instagramIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9a5.5 5.5 0 0 1-5.5 5.5h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2Zm0 2A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20h9a3.5 3.5 0 0 0 3.5-3.5v-9A3.5 3.5 0 0 0 16.5 4h-9Zm9.75 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg>';
   if(p.official_url) out.push('<a class="performer-link official" href="'+esc(p.official_url)+'" target="_blank" rel="noopener noreferrer">公式サイト</a>');
-  if(p.x_url) out.push('<a class="performer-link x" href="'+esc(p.x_url)+'" target="_blank" rel="noopener noreferrer">X</a>');
-  if(p.instagram_url) out.push('<a class="performer-link instagram" href="'+esc(p.instagram_url)+'" target="_blank" rel="noopener noreferrer">Instagram</a>');
+  if(p.x_url) out.push('<a class="performer-link x social-icon-link" href="'+esc(p.x_url)+'" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">'+xIcon+'<span>X</span></a>');
+  if(p.instagram_url) out.push('<a class="performer-link instagram social-icon-link" href="'+esc(p.instagram_url)+'" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">'+instagramIcon+'<span>Instagram</span></a>');
   if(p.profile_url) out.push('<a class="performer-link" href="'+esc(p.profile_url)+'" target="_blank" rel="noopener noreferrer">プロフィール</a>');
   return out.length?'<div class="performer-links">'+out.join("")+'</div>':"";
 }
