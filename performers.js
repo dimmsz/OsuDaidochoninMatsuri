@@ -90,7 +90,7 @@ function showDetail(id){
       socialLinks(p)+
     '</div>';
   $("#performerSchedule").innerHTML=schedule.length?schedule.map(e=>
-    '<a class="performer-event" href="./?event='+encodeURIComponent(e.id)+'">'+
+    '<a class="performer-event" href="./#schedule">'+
       '<div class="performer-event-date">'+dateText(e.event_date)+'<strong>'+esc(timeText(e))+'</strong></div>'+
       '<div class="performer-event-main"><div class="event-title">'+esc(e.title||e.performer||"")+'</div><div class="meta">📍 '+esc(venueName(e))+'</div></div>'+
     '</a>'
