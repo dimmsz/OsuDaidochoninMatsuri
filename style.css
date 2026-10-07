@@ -31,3 +31,5 @@
 @media(max-width:420px){.next-watch-heading{align-items:flex-start}.countdown-pill{font-size:10px;padding:5px 7px}.next-watch-item{grid-template-columns:23px 1fr 32px}}
 
 .osu-map-controls{display:grid;gap:6px}.map-control-btn{width:36px;height:36px;border:0;border-radius:8px;background:#fff;color:#333;box-shadow:0 1px 5px #0004;font-size:20px;font-weight:800;line-height:1;cursor:pointer}.map-control-btn:active{transform:scale(.95)}
+
+.venue-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.venue-actions .route-btn{margin-top:0}.timetable-btn{border:0;border-radius:8px;padding:7px 10px;background:#eee8e3;color:#725c50;font:inherit;font-size:12px;font-weight:800;cursor:pointer}.timetable-btn:active{transform:translateY(1px)}
