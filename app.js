@@ -21,10 +21,10 @@ function start(e) { return mins(e.start_time); }
 function end(e) { return e.end_time ? mins(e.end_time) : start(e)+(Number(e.duration_minutes)||30); }
 function venueLabel(e) {
   const type=e.location_type||"fixed";
-  if(type==="roaming") return e.location_label||"ロービング";
-  if(type==="route") return e.location_label||"移動演目";
+  if(type==="roaming") return "🌀 "+(e.location_label||"ロービング");
+  if(type==="route") return "↔ "+(e.location_label||"移動演目");
   const v=venues.find(x=>x.id===e.venue_id);
-  return (v?.name||"会場未定")+(e.venue_section?"・"+e.venue_section:"");
+  return "📍 "+(v?.name||"会場未定")+(e.venue_section?"・"+e.venue_section:"");
 }
 function status(e,d=new Date()) {
   if(e.event_date!==dateKey(d)) return "other";
@@ -63,7 +63,7 @@ function card(e,now=false) {
     performerMarkup(e)+
     (titleSub?'<div class="event-subtitle">'+esc(titleSub)+'</div>':"")+
     (now?'<span class="live-pill">● 開催中</span>':status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
-    '<div class="meta">📍 '+esc(venueLabel(e))+'</div>'+
+    '<div class="meta">'+esc(venueLabel(e))+'</div>'+
     tagMarkup+
     '</div><button class="fav '+(fav?"on":"")+'" data-fav="'+e.id+'">'+(fav?"★":"☆")+'</button></article>';
 }
