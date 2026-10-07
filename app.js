@@ -48,7 +48,12 @@ function performerMarkup(e) {
   ).join('<span class="performer-separator">・</span>')+'</div>';
 }
 
-function card(e,now=false) {
+function scheduleDateText(s){
+  if(!s) return "";
+  const [y,m,d]=s.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString("ja-JP",{month:"numeric",day:"numeric",weekday:"short"});
+}
+function card(e,now=false,showDate=false) {
   const v=venues.find(x=>x.id===e.venue_id);
   const t=e.start_time?.slice(0,5)||"";
   const en=e.end_time ? "–"+e.end_time.slice(0,5) : (e.duration_minutes||30)+"分";
@@ -59,7 +64,7 @@ function card(e,now=false) {
     ? '<div class="event-tags">'+(genre?'<span class="event-genre">'+esc(genre)+'</span>':"")+eventTags.filter(t=>t!==genre).slice(0,4).map(t=>'<span class="event-tag">'+esc(t)+'</span>').join("")+'</div>'
     : "";
   const titleSub=e.performer&&e.title!==e.performer?e.title:"";
-  return '<article class="event '+(now?"event-now":"")+'"><div class="event-time">'+t+'<small>'+en+'</small></div><div>'+
+  return '<article class="event '+(now?"event-now":"")+'">'+(showDate?'<div class="event-date-label">'+esc(scheduleDateText(e.event_date))+'</div>':"")+'<div class="event-time">'+t+'<small>'+en+'</small></div><div>'+
     performerMarkup(e)+
     (titleSub?'<div class="event-subtitle">'+esc(titleSub)+'</div>':"")+
     (now?'<span class="live-pill">● 開催中</span>':status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
@@ -92,7 +97,7 @@ function renderSchedule() {
   const venueId=$("#venueFilter").value;
   const a=unique(events.filter(e=>(!d||e.event_date===d)&&(!venueId||String(e.venue_id)===venueId)))
     .sort((x,y)=>(x.event_date+x.start_time).localeCompare(y.event_date+y.start_time));
-  $("#scheduleList").innerHTML=a.length?a.map(card).join(""):'<div class="empty">この条件のイベントはありません。</div>';
+  $("#scheduleList").innerHTML=a.length?a.map(e=>card(e,false,!d)).join(""):'<div class="empty">この条件のイベントはありません。</div>';
   bindFavs();
 }
 function renderSearchOptions(){
