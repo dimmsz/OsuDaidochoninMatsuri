@@ -138,9 +138,7 @@ function showDetail(id){
     localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
     showDetail(Number(p.id));
   });
-  const allIds=(linksByPerformer.get(Number(p.id))||[]).map(x=>Number(x.event_id));
-  const allFav=allIds.length>0 && allIds.every(eventId=>favs.has(eventId));
-  $("#favoriteAllBtn").textContent=allFav ? "★ すべてお気に入り解除" : "☆ すべてお気に入り";
+  updateBulkFavoriteButton(schedule);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
