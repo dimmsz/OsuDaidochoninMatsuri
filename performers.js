@@ -136,6 +136,9 @@ function showDetail(id){
     localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
     showDetail(Number(p.id));
   });
+  const allIds=(linksByPerformer.get(Number(p.id))||[]).map(x=>Number(x.event_id));
+  const allFav=allIds.length>0 && allIds.every(eventId=>favs.has(eventId));
+  $("#favoriteAllBtn").textContent=allFav ? "★ すべてお気に入り解除" : "☆ すべてお気に入り";
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -156,6 +159,16 @@ $("#performerBulkFavorite").onclick=()=>{
 
 $("#performerKeyword").oninput=renderList;
 $("#performerGenre").onchange=renderList;
+$("#favoriteAllBtn").onclick=()=>{
+  const p=performers.find(x=>Number(x.id)===Number(new URLSearchParams(location.search).get("id")));
+  if(!p) return;
+  const eventIds=(linksByPerformer.get(Number(p.id))||[]).map(x=>Number(x.event_id));
+  const allFav=eventIds.length>0 && eventIds.every(id=>favs.has(id));
+  eventIds.forEach(id=>allFav?favs.delete(id):favs.add(id));
+  localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
+  showDetail(Number(p.id));
+};
+
 $("#performerBack").onclick=()=>{
   $("#performerDetail").hidden=true;
   $("#performerIndex").hidden=false;
