@@ -1,4 +1,4 @@
-const CACHE="osu-now-v47";
+const CACHE="osu-now-v48";
 
 self.addEventListener("install",e=>{
   self.skipWaiting();
