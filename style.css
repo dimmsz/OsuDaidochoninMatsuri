@@ -38,7 +38,7 @@
 .search-tab{border:0;border-radius:8px;padding:9px 8px;background:transparent;color:#725c50;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
 .search-tab.active{background:#fff;color:#8b1e2d;box-shadow:0 1px 3px #0002}
 .search-panel[hidden]{display:none}
-.search-performer-card{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-radius:12px;padding:13px 14px;text-decoration:none;color:#272321;box-shadow:0 1px 4px #0001}
+.search-performer-card{display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:0 8px 0 14px;box-shadow:0 1px 4px #0001}.search-performer-main{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1;padding:13px 0;text-decoration:none;color:#272321}.performer-search-fav{flex:0 0 auto}
 .search-performer-card:active{transform:translateY(1px)}
 .search-performer-card .performer-name{font-size:15px}
 
