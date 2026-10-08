@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://pwtmblzenkxrilvsesak.supabase.co";
 const SUPABASE_KEY = "sb_publishable_1xXRoGWj2Kz-mIlUB_AvWw_Ge8odQN_";
 const $ = (s) => document.querySelector(s);
-let events = [], venues = [], performers = [], performersById = new Map(), linksByEvent = new Map(), tagsByEvent = new Map(), venueMap = null, venueMarkers = [], venueMarkerById = new Map(), routeLine = null, currentLocationMarker = null, routeTargetId = null;
+let events = [], venues = [], performers = [], performersById = new Map(), linksByEvent = new Map(), tagsByEvent = new Map(), venueMap = null, venueMarkers = [], venueMarkerById = new Map(), headquartersMarker = null, routeLine = null, currentLocationMarker = null, routeTargetId = null;
 const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
 const PRESET_TAGS = ["大道芸","屋外","昼公演","夜公演","身体表現","音楽","ダンス","ジャグリング","サーカス","コメディ","マジック","伝統","パントマイム","バルーン","からくり人形","太鼓","アイドル","プロレス","金粉","特別企画","大型演目","短時間演目"];
 
@@ -256,6 +256,11 @@ function renderVenues() {
       venueMarkers.push(m); venueMarkerById.set(v.id,m); bounds.push([Number(v.latitude),Number(v.longitude)]);
     });
     if(bounds.length) venueMap.fitBounds(bounds,{padding:[24,24]});
+    if(headquartersMarker) headquartersMarker.remove();
+    headquartersMarker=L.marker([35.15842614,136.90205917],{
+      title:"本部",
+      alt:"本部"
+    }).addTo(venueMap).bindPopup("<strong>本部</strong>");
     addMapControls();
     setTimeout(()=>venueMap.invalidateSize(),50);
   }
