@@ -466,7 +466,7 @@ async function load() {
     [venues,events,performers,linksByEventRows,tagRows]=await Promise.all([
       api("venues","select=*&festival_id=eq."+id+"&order=sort_order"),
       api("events","select=*&festival_id=eq."+id+"&order=event_date,start_time,sort_order"),
-      api("performers","select=id,name&order=name"),
+      api("performers","select=id,name,genre,description&order=name"),
       api("event_performers","select=event_id,performer_id,sort_order&order=event_id,sort_order"),
       api("event_tags","select=event_id,tag")
     ]);
