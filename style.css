@@ -33,3 +33,11 @@
 .osu-map-controls{display:grid;gap:6px}.map-control-btn{width:36px;height:36px;border:0;border-radius:8px;background:#fff;color:#333;box-shadow:0 1px 5px #0004;font-size:20px;font-weight:800;line-height:1;cursor:pointer}.map-control-btn:active{transform:scale(.95)}
 
 .venue-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.venue-actions .route-btn{margin-top:0}.timetable-btn{border:0;border-radius:8px;padding:7px 10px;background:#eee8e3;color:#725c50;font:inherit;font-size:12px;font-weight:800;cursor:pointer}.timetable-btn:active{transform:translateY(1px)}
+
+.search-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:0 2px 12px;padding:4px;background:#eee8e3;border-radius:10px}
+.search-tab{border:0;border-radius:8px;padding:9px 8px;background:transparent;color:#725c50;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.search-tab.active{background:#fff;color:#8b1e2d;box-shadow:0 1px 3px #0002}
+.search-panel[hidden]{display:none}
+.search-performer-card{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-radius:12px;padding:13px 14px;text-decoration:none;color:#272321;box-shadow:0 1px 4px #0001}
+.search-performer-card:active{transform:translateY(1px)}
+.search-performer-card .performer-name{font-size:15px}
