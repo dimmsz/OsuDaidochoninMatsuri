@@ -53,7 +53,7 @@ function scheduleDateText(s){
   const [y,m,d]=s.split("-").map(Number);
   return new Date(y,m-1,d).toLocaleDateString("ja-JP",{month:"numeric",day:"numeric",weekday:"short"});
 }
-function card(e,now=false,showDate=false) {
+function card(e,now=false,showDate=false,conflict=false) {
   const v=venues.find(x=>x.id===e.venue_id);
   const t=e.start_time?.slice(0,5)||"";
   const en=e.end_time ? "–"+e.end_time.slice(0,5) : (e.duration_minutes||30)+"分";
@@ -64,7 +64,7 @@ function card(e,now=false,showDate=false) {
     ? '<div class="event-tags">'+(genre?'<span class="event-genre">'+esc(genre)+'</span>':"")+eventTags.filter(t=>t!==genre).slice(0,4).map(t=>'<span class="event-tag">'+esc(t)+'</span>').join("")+'</div>'
     : "";
   const titleSub=e.performer&&e.title!==e.performer?e.title:"";
-  return '<article class="event '+(now?"event-now":"")+'"><div class="event-time">'+(showDate?'<div class="event-date-label">'+esc(scheduleDateText(e.event_date))+'</div>':"")+t+'<small>'+en+'</small></div><div>'+
+  return '<article class="event '+(now?"event-now ":"")+(conflict?"event-conflict":"")+'"><div class="event-time">'+(showDate?'<div class="event-date-label">'+esc(scheduleDateText(e.event_date))+'</div>':"")+t+'<small>'+en+'</small></div><div>'+
     performerMarkup(e)+
     (titleSub?'<div class="event-subtitle">'+esc(titleSub)+'</div>':"")+
     (now && status(e)==="live"?'<span class="live-pill">● 開催中</span>':!now && status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
@@ -431,7 +431,25 @@ function highlightVenue(id){
 }
 function renderFavorites() {
   const a=unique(events.filter(e=>favs.has(e.id)));
-  $("#favoriteList").innerHTML=a.length?a.map(e=>card(e,false,true)).join(""):'<div class="empty">お気に入りはまだありません。</div>';
+  const conflictIds=new Set();
+  for(let i=0;i<a.length;i++){
+    for(let j=i+1;j<a.length;j++){
+      const x=a[i], y=a[j];
+      if(x.event_date!==y.event_date) continue;
+      const xs=start(x), xe=end(x), ys=start(y), ye=end(y);
+      if(xs<ye && ys<xe){
+        conflictIds.add(x.id);
+        conflictIds.add(y.id);
+      }
+    }
+  }
+  $("#favoriteList").innerHTML=a.length?a.map(e=>{
+    const overlap=conflictIds.has(e.id);
+    const html=card(e,false,true,overlap);
+    return overlap
+      ? html.replace('<div class="meta">','<span class="overlap-pill">⚠ 時間重複</span><div class="meta">')
+      : html;
+  }).join(""):'<div class="empty">お気に入りはまだありません。</div>';
   bindFavs();
 }
 function bindFavs() {
