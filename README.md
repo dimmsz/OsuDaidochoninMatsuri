@@ -15,7 +15,7 @@
 
 公開先:
 - GitHub Pages
-- Azure Static Web Apps: `https://orange-tree-05bc5d200.1.azurestaticapps.net`
+- Azure Static Web Apps: `https://icy-stone-0340ac800.5.azurestaticapps.net`
 
 ## 画面構成
 
@@ -293,9 +293,19 @@ Service Workerで主要ファイルをキャッシュしています。
 
 現在のキャッシュ名:
 
-`osu-now-v18`
+`osu-now-v36`
+
+現在のアプリ表示バージョン: `v1.0.13`
 
 UIやデータ取得ロジックを更新した場合は、キャッシュバージョンも更新して古いJS/CSSが残らないようにします。
+
+## 開発知見
+
+次回の開発を再開するときに参照する、これまでの実装・データ整理・デプロイ障害から得た知見をまとめています。
+
+[docs/PROJECT_KNOWLEDGE.md](docs/PROJECT_KNOWLEDGE.md)
+
+特に、会場/区画/移動演目のDB設計、genreとtagの使い分け、出演者マスター、PWAキャッシュ、Azure Static Web Appsのデプロイ、時間重複警告についての判断を残しています。
 
 ## 開発メモ
 
