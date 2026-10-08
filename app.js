@@ -431,7 +431,7 @@ function highlightVenue(id){
 }
 function renderFavorites() {
   const a=unique(events.filter(e=>favs.has(e.id)));
-  $("#favoriteList").innerHTML=a.length?a.map(e=>card(e,false)).join(""):'<div class="empty">お気に入りはまだありません。</div>';
+  $("#favoriteList").innerHTML=a.length?a.map(e=>card(e,false,true)).join(""):'<div class="empty">お気に入りはまだありません。</div>';
   bindFavs();
 }
 function bindFavs() {
