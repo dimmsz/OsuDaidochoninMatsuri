@@ -163,7 +163,7 @@ function renderPerformerSearchOptions(){
   if(!s && !t) return;
   if(s){
     const current=s.value;
-    const genres=[...new Set(performers.map(p=>p.genre).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
+    const genres=[...new Set(performers.map(p=>p.genre).filter(Boolean))].sort((a,b)=>genreOrder(a)-genreOrder(b)||a.localeCompare(b,"ja"));
     s.innerHTML='<option value="">すべて</option>'+genres.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join("");
     if(genres.includes(current)) s.value=current;
   }
