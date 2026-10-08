@@ -146,19 +146,37 @@ function renderSchedule() {
   $("#scheduleList").innerHTML=a.length?a.map(e=>card(e,false,!d)).join(""):'<div class="empty">この条件のイベントはありません。</div>';
   bindFavs();
 }
+function performerHasTag(performerId, tag){
+  if(!tag) return true;
+  for(const [eventId, rows] of linksByEvent){
+    if(!rows.some(r=>Number(r.performer_id)===Number(performerId))) continue;
+    if((tagsByEvent.get(Number(eventId))||[]).includes(tag)) return true;
+  }
+  return false;
+}
 function renderPerformerSearchOptions(){
   const s=$("#searchPerformerGenre");
-  if(!s) return;
-  const current=s.value;
-  const genres=[...new Set(performers.map(p=>p.genre).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
-  s.innerHTML='<option value="">すべて</option>'+genres.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join("");
-  if(genres.includes(current)) s.value=current;
+  const t=$("#searchPerformerTag");
+  if(!s && !t) return;
+  if(s){
+    const current=s.value;
+    const genres=[...new Set(performers.map(p=>p.genre).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
+    s.innerHTML='<option value="">すべて</option>'+genres.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join("");
+    if(genres.includes(current)) s.value=current;
+  }
+  if(t){
+    const current=t.value;
+    t.innerHTML='<option value="">すべて</option>'+PRESET_TAGS.map(tag=>'<option value="'+esc(tag)+'">'+esc(tag)+'</option>').join("");
+    if(PRESET_TAGS.includes(current)) t.value=current;
+  }
 }
 function renderPerformerSearch(){
   const q=$("#searchPerformerKeyword")?.value?.trim().toLocaleLowerCase("ja-JP")||"";
   const g=$("#searchPerformerGenre")?.value||"";
+  const tag=$("#searchPerformerTag")?.value||"";
   const list=performers.filter(p=>{
     if(g && p.genre!==g) return false;
+    if(tag && !performerHasTag(p.id,tag)) return false;
     if(q && ![p.name,p.genre,p.description].filter(Boolean).join(" ").toLocaleLowerCase("ja-JP").includes(q)) return false;
     return true;
   }).sort((a,b)=>a.name.localeCompare(b.name,"ja"));
@@ -420,7 +438,13 @@ $("#searchKeyword").oninput=renderSearch;
 document.querySelectorAll("[data-search-tab]").forEach(b=>b.onclick=()=>setSearchTab(b.dataset.searchTab));
 $("#searchPerformerKeyword").oninput=renderPerformerSearch;
 $("#searchPerformerGenre").onchange=renderPerformerSearch;
-$("#searchPerformerClear").onclick=()=>{ $("#searchPerformerKeyword").value=""; $("#searchPerformerGenre").value=""; renderPerformerSearch(); };
+$("#searchPerformerTag").onchange=renderPerformerSearch;
+$("#searchPerformerClear").onclick=()=>{
+  $("#searchPerformerKeyword").value="";
+  $("#searchPerformerGenre").value="";
+  $("#searchPerformerTag").value="";
+  renderPerformerSearch();
+};
 $("#searchClear").onclick=()=>{
   $("#searchGenre").value="";
   $("#searchTag").value="";
