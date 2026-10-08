@@ -448,12 +448,57 @@ function renderFavorites() {
   }
   $("#favoriteList").innerHTML=a.length?a.map(e=>{
     const overlap=conflictIds.has(e.id);
-    const html=card(e,false,true,overlap);
+    const html=card(e,false,true,overlap).replace('class="event ','class="event favorite-event-card " data-event-id="'+e.id+'"');
     return overlap
       ? html.replace('<div class="meta">','<span class="overlap-pill">⚠ 時間重複</span><div class="meta">')
       : html;
   }).join(""):'<div class="empty">お気に入りはまだありません。</div>';
+  bindFavoriteLongPress();
   bindFavs();
+}
+function bindFavoriteLongPress() {
+  const list=$("#favoriteList");
+  if(!list) return;
+  list.querySelectorAll(".favorite-event-card").forEach(card=>{
+    let timer=null, longPressed=false;
+    const startPress=ev=>{
+      if(ev.target.closest("button,a")) return;
+      longPressed=false;
+      timer=setTimeout(()=>{
+        longPressed=true;
+        document.querySelectorAll(".favorite-event-actions").forEach(el=>el.remove());
+        const eventId=Number(card.dataset.eventId);
+        const e=events.find(x=>Number(x.id)===eventId);
+        if(!e) return;
+        const actions=document.createElement("div");
+        actions.className="favorite-event-actions";
+        actions.innerHTML='<button type="button" data-favorite-timetable>◷ タイムテーブル</button><button type="button" data-favorite-map>⌖ 地図</button>';
+        card.appendChild(actions);
+        actions.querySelector("[data-favorite-timetable]").onclick=()=>{
+          if($("#dateFilter")) $("#dateFilter").value=e.event_date||"";
+          if($("#venueFilter")) $("#venueFilter").value=e.venue_id!=null?String(e.venue_id):"";
+          document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="schedule"));
+          document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page==="schedule"));
+          renderSchedule();
+          window.scrollTo({top:0,behavior:"smooth"});
+        };
+        actions.querySelector("[data-favorite-map]").onclick=()=>{
+          document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="venues"));
+          document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page==="venues"));
+          renderVenues();
+          if(e.venue_id!=null) setTimeout(()=>focusVenueOnMap(Number(e.venue_id)),100);
+          window.scrollTo({top:0,behavior:"smooth"});
+        };
+      },550);
+    };
+    const cancelPress=()=>{if(timer){clearTimeout(timer);timer=null;}};
+    card.addEventListener("pointerdown",startPress);
+    card.addEventListener("pointerup",cancelPress);
+    card.addEventListener("pointercancel",cancelPress);
+    card.addEventListener("pointerleave",cancelPress);
+    card.addEventListener("click",ev=>{if(longPressed){ev.preventDefault();ev.stopPropagation();longPressed=false;}});
+    card.addEventListener("contextmenu",ev=>ev.preventDefault());
+  });
 }
 function bindFavs() {
   document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{
