@@ -601,6 +601,22 @@ $("#searchClear").onclick=()=>{
   renderSearch();
 };
 $("#refreshBtn").onclick=load;
+const aboutModal=$("#aboutModal");
+const closeAbout=()=>{
+  if(!aboutModal) return;
+  aboutModal.hidden=true;
+};
+$("#aboutBtn").onclick=()=>{
+  if(!aboutModal) return;
+  aboutModal.hidden=false;
+  trackUsage("about_view","page","about");
+};
+$("#aboutClose").onclick=closeAbout;
+document.querySelector("[data-about-close]")?.addEventListener("click",closeAbout);
+document.addEventListener("keydown",ev=>{
+  if(ev.key==="Escape" && aboutModal && !aboutModal.hidden) closeAbout();
+});
+
 $("#hideCompleted").onchange=()=>{
   hideCompleted=$("#hideCompleted").checked;
   localStorage.setItem("osu-hide-completed",String(hideCompleted));
