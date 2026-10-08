@@ -183,8 +183,23 @@ function renderPerformerSearch(){
   $("#searchPerformerSummary").textContent=list.length+"組";
   $("#searchPerformerList").innerHTML=list.length?list.map(p=>{
     const count=(linksByEvent.size ? [...linksByEvent.values()].filter(rows=>rows.some(r=>Number(r.performer_id)===Number(p.id))).length : 0);
-    return '<a class="search-performer-card" href="performers.html?id='+encodeURIComponent(p.id)+'"><div><div class="performer-name">'+esc(p.name)+'</div>'+(p.genre?'<div class="performer-genre">'+esc(p.genre)+'</div>':"")+'</div><div class="performer-count">'+count+'件<span>›</span></div></a>';
+    const schedule=unique(events.filter(e=>(linksByEvent.get(Number(e.id))||[]).some(r=>Number(r.performer_id)===Number(p.id))));
+    const allFavorite=schedule.length>0 && schedule.every(e=>favs.has(e.id));
+    return '<div class="search-performer-card"><a class="search-performer-main" href="performers.html?id='+encodeURIComponent(p.id)+'"><div><div class="performer-name">'+esc(p.name)+'</div>'+(p.genre?'<div class="performer-genre">'+esc(p.genre)+'</div>':"")+'</div><div class="performer-count">'+count+'件<span>›</span></div></a><button type="button" class="fav performer-search-fav '+(allFavorite?"on":"")+'" data-performer-fav="'+p.id+'" title="'+(allFavorite?"出演スケジュールをすべてお気に入りから解除":"出演スケジュールをすべてお気に入りに登録")+'">'+(allFavorite?"★":"☆")+'</button></div>';
   }).join(""):'<div class="empty">条件に一致する出演者はいません。</div>';
+  document.querySelectorAll("[data-performer-fav]").forEach(b=>b.onclick=ev=>{
+    ev.preventDefault();
+    ev.stopPropagation();
+    const performerId=Number(b.dataset.performerFav);
+    const schedule=unique(events.filter(e=>(linksByEvent.get(Number(e.id))||[]).some(r=>Number(r.performer_id)===performerId)));
+    if(!schedule.length) return;
+    const allFavorite=schedule.every(e=>favs.has(e.id));
+    if(allFavorite && !window.confirm("この出演者の出演スケジュールをすべてお気に入りから解除しますか？")) return;
+    schedule.forEach(e=>allFavorite?favs.delete(e.id):favs.add(e.id));
+    localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
+    renderPerformerSearch();
+    renderFavorites();
+  });
 }
 function setSearchTab(tab){
   const isPerformer=tab==="performers";
