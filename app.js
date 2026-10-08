@@ -241,7 +241,7 @@ function renderVenues() {
   const mapped=ordered.filter(v=>v.latitude!=null&&v.longitude!=null);
   if(window.L && mapped.length){
     if(!venueMap){
-      venueMap=L.map("venueMap",{scrollWheelZoom:false}).setView([35.1597,136.9020],16);
+      venueMap=L.map("venueMap",{scrollWheelZoom:false}).setView([35.15842614,136.90205917],17);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© OpenStreetMap contributors',referrerPolicy:'strict-origin-when-cross-origin'}).addTo(venueMap);
     }
     venueMarkers.forEach(m=>m.remove());
@@ -255,7 +255,7 @@ function renderVenues() {
       m.on("click",()=>highlightVenue(v.id));
       venueMarkers.push(m); venueMarkerById.set(v.id,m); bounds.push([Number(v.latitude),Number(v.longitude)]);
     });
-    if(bounds.length) venueMap.fitBounds(bounds,{padding:[24,24]});
+    venueMap.setView([35.15842614,136.90205917],17);
     if(headquartersMarker) headquartersMarker.remove();
     headquartersMarker=L.marker([35.15842614,136.90205917],{
       title:"本部",
