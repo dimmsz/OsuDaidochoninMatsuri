@@ -458,6 +458,7 @@ function bindFavs() {
     favs.has(id)?favs.delete(id):favs.add(id);
     localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
     renderNow(); renderSchedule(); renderFavorites();
+    if($("#search")?.classList.contains("active")) renderSearch();
   });
 }
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
