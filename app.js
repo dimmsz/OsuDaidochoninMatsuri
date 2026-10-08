@@ -146,6 +146,39 @@ function renderSchedule() {
   $("#scheduleList").innerHTML=a.length?a.map(e=>card(e,false,!d)).join(""):'<div class="empty">この条件のイベントはありません。</div>';
   bindFavs();
 }
+function renderPerformerSearchOptions(){
+  const s=$("#searchPerformerGenre");
+  if(!s) return;
+  const current=s.value;
+  const genres=[...new Set(performers.map(p=>p.genre).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
+  s.innerHTML='<option value="">すべて</option>'+genres.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join("");
+  if(genres.includes(current)) s.value=current;
+}
+function renderPerformerSearch(){
+  const q=$("#searchPerformerKeyword")?.value?.trim().toLocaleLowerCase("ja-JP")||"";
+  const g=$("#searchPerformerGenre")?.value||"";
+  const list=performers.filter(p=>{
+    if(g && p.genre!==g) return false;
+    if(q && ![p.name,p.genre,p.description].filter(Boolean).join(" ").toLocaleLowerCase("ja-JP").includes(q)) return false;
+    return true;
+  }).sort((a,b)=>a.name.localeCompare(b.name,"ja"));
+  $("#searchPerformerSummary").textContent=list.length+"組";
+  $("#searchPerformerList").innerHTML=list.length?list.map(p=>{
+    const count=(linksByEvent.size ? [...linksByEvent.values()].filter(rows=>rows.some(r=>Number(r.performer_id)===Number(p.id))).length : 0);
+    return '<a class="search-performer-card" href="performers.html?id='+encodeURIComponent(p.id)+'"><div><div class="performer-name">'+esc(p.name)+'</div>'+(p.genre?'<div class="performer-genre">'+esc(p.genre)+'</div>':"")+'</div><div class="performer-count">'+count+'件<span>›</span></div></a>';
+  }).join(""):'<div class="empty">条件に一致する出演者はいません。</div>';
+}
+function setSearchTab(tab){
+  const isPerformer=tab==="performers";
+  document.querySelectorAll("[data-search-tab]").forEach(b=>{
+    const active=b.dataset.searchTab===tab;
+    b.classList.toggle("active",active);
+    b.setAttribute("aria-selected",active?"true":"false");
+  });
+  $("#eventSearchPanel").hidden=isPerformer;
+  $("#performerSearchPanel").hidden=!isPerformer;
+  if(isPerformer){ renderPerformerSearchOptions(); renderPerformerSearch(); }
+}
 function renderSearchOptions(){
   const genreSelect=$("#searchGenre");
   const tagSelect=$("#searchTag");
@@ -376,7 +409,7 @@ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n===b));
   if(b.dataset.page==="schedule")renderSchedule();
   if(b.dataset.page==="venues")renderVenues();
-  if(b.dataset.page==="search"){ renderSearchOptions(); renderSearch(); }
+  if(b.dataset.page==="search"){ renderSearchOptions(); renderPerformerSearchOptions(); renderSearch(); renderPerformerSearch(); }
   if(b.dataset.page==="favorites")renderFavorites();
 });
 $("#dateFilter").onchange=renderSchedule;
@@ -384,6 +417,10 @@ $("#venueFilter").onchange=renderSchedule;
 $("#searchGenre").onchange=renderSearch;
 $("#searchTag").onchange=renderSearch;
 $("#searchKeyword").oninput=renderSearch;
+document.querySelectorAll("[data-search-tab]").forEach(b=>b.onclick=()=>setSearchTab(b.dataset.searchTab));
+$("#searchPerformerKeyword").oninput=renderPerformerSearch;
+$("#searchPerformerGenre").onchange=renderPerformerSearch;
+$("#searchPerformerClear").onclick=()=>{ $("#searchPerformerKeyword").value=""; $("#searchPerformerGenre").value=""; renderPerformerSearch(); };
 $("#searchClear").onclick=()=>{
   $("#searchGenre").value="";
   $("#searchTag").value="";
@@ -420,7 +457,8 @@ async function load() {
     events=unique(events);
     renderVenueFilter();
     renderSearchOptions();
-    renderNow(); renderSchedule(); renderVenues(); renderSearch();
+    renderPerformerSearchOptions();
+    renderNow(); renderSchedule(); renderVenues(); renderSearch(); renderPerformerSearch();
   } catch(e) {
     console.error(e);
     $("#nowSection").innerHTML='<div class="empty">データを読み込めませんでした。<br><small>'+esc(e.message)+'</small></div>';
