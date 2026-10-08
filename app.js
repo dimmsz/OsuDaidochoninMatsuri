@@ -67,7 +67,7 @@ function card(e,now=false,showDate=false) {
   return '<article class="event '+(now?"event-now":"")+'"><div class="event-time">'+(showDate?'<div class="event-date-label">'+esc(scheduleDateText(e.event_date))+'</div>':"")+t+'<small>'+en+'</small></div><div>'+
     performerMarkup(e)+
     (titleSub?'<div class="event-subtitle">'+esc(titleSub)+'</div>':"")+
-    (now?'<span class="live-pill">● 開催中</span>':status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
+    (now && status(e)==="live"?'<span class="live-pill">● 開催中</span>':!now && status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
     '<div class="meta">'+esc(venueLabel(e))+'</div>'+
     tagMarkup+
     '</div><button class="fav '+(fav?"on":"")+'" data-fav="'+e.id+'">'+(fav?"★":"☆")+'</button></article>';
@@ -411,7 +411,7 @@ function highlightVenue(id){
 }
 function renderFavorites() {
   const a=unique(events.filter(e=>favs.has(e.id)));
-  $("#favoriteList").innerHTML=a.length?a.map(card).join(""):'<div class="empty">お気に入りはまだありません。</div>';
+  $("#favoriteList").innerHTML=a.length?a.map(e=>card(e,false)).join(""):'<div class="empty">お気に入りはまだありません。</div>';
   bindFavs();
 }
 function bindFavs() {
