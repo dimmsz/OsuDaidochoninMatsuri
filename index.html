@@ -7,13 +7,14 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="style.css?v=1.0.21">
+<link rel="stylesheet" href="style.css?v=1.0.22">
 <title>大須大道町人祭 NOW</title>
 </head>
 <body>
 <header class="appbar">
-  <div><div class="eyebrow">第47回・非公式アプリ</div><h1>大須大道町人祭 <span>NOW</span></h1><div class="dates">10/9(金) 前夜祭　10/10(土)・11(日)</div><div id="connectionStatus" class="connection-status" aria-live="polite"></div></div>
+  <div class="app-title-row"><div><div class="eyebrow">第47回・非公式アプリ</div><h1>大須大道町人祭 <span>NOW</span></h1></div><button id="aboutBtn" class="about-btn" type="button" aria-label="このアプリについて" title="このアプリについて">ⓘ</button></div><div class="dates">10/9(金) 前夜祭　10/10(土)・11(日)</div><div id="connectionStatus" class="connection-status" aria-live="polite"></div></div>
 </header>
+<div id="aboutModal" class="about-modal" hidden><div class="about-backdrop" data-about-close></div><section class="about-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle"><div class="about-head"><h2 id="aboutTitle">このアプリについて</h2><button id="aboutClose" class="about-close" type="button" aria-label="閉じる">×</button></div><div class="about-body"><p><strong>大須大道町人祭 非公式アプリ</strong></p><p>第47回 大須大道町人祭（2026年10月9日～11日）を現地で楽しむためのアプリです。</p><h3>できること</h3><ul><li>NOW：現在開催中・次のイベントを確認</li><li>タイムテーブル：日付・会場からイベントを検索</li><li>会場：会場マップと現在地からの徒歩ルート</li><li>検索：イベント・出演者を検索</li><li>お気に入り：気になるイベントを保存</li><li>出演者情報・出演スケジュールを確認</li></ul><h3>データについて</h3><p>祭り公式のタイムテーブル等をもとに情報を整理しています。最新の開催状況、時間変更・中止などは公式発表をご確認ください。</p><p>このアプリは<strong>非公式</strong>であり、大須大道町人祭の主催者・公式団体が運営するものではありません。</p><h3>利用について</h3><p>お気に入りなど一部の設定は、この端末のブラウザ内に保存されます。</p><p>アプリの利用状況を把握するため、個人を特定しないランダムなIDによる匿名の利用統計を収集しています。検索したキーワードそのものや氏名・メールアドレスなどは収集していません。</p><p class="about-version">バージョン v1.0.21</p></div></section></div>
 <main>
 <section id="home" class="page active">
   <div class="now-head"><div><div class="eyebrow">いま大須で</div><h2 id="nowClock">--:--</h2></div><div id="nowDate" class="now-date">----</div></div>
@@ -64,6 +65,6 @@
 </main>
 <nav class="bottom-nav"><button class="nav active" data-page="home">●<span>NOW</span></button><button class="nav" data-page="schedule">◷<span class="long-label">タイムテーブル</span></button><button class="nav" data-page="venues">⌖<span>会場</span></button><button class="nav" data-page="search">🔎<span>検索</span></button><button class="nav" data-page="favorites">★<span>お気に入り</span></button></nav>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script type="module" src="app.js?v=1.0.21"></script>
+<script type="module" src="app.js?v=1.0.22"></script>
 <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
 </body></html>
