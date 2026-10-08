@@ -466,7 +466,14 @@ function bindFavoriteLongPress() {
       longPressed=false;
       timer=setTimeout(()=>{
         longPressed=true;
-        if(navigator.vibrate) navigator.vibrate(40);
+        // 長押し成立時の振動。Android/PWAでもユーザー操作として扱われやすいよう、
+        // 長押し判定直後に短いパターンを発火する。
+        if("vibrate" in navigator){
+          try{
+            navigator.vibrate(0);
+            navigator.vibrate([35,20,55]);
+          }catch{}
+        }
         document.querySelectorAll(".favorite-event-popup").forEach(el=>el.remove());
         const eventId=Number(card.dataset.eventId);
         const e=events.find(x=>Number(x.id)===eventId);
