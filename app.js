@@ -3,6 +3,7 @@ const SUPABASE_KEY = "sb_publishable_1xXRoGWj2Kz-mIlUB_AvWw_Ge8odQN_";
 const $ = (s) => document.querySelector(s);
 let events = [], venues = [], performers = [], performersById = new Map(), linksByEvent = new Map(), tagsByEvent = new Map(), venueMap = null, venueMarkers = [], venueMarkerById = new Map(), headquartersMarker = null, routeLine = null, currentLocationMarker = null, routeTargetId = null;
 const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
+let hideCompleted = localStorage.getItem("osu-hide-completed") !== "false";
 const PRESET_TAGS = ["大道芸","パフォーマンス","身体表現","音楽","ダンス","サーカス","ジャグリング","コメディ","パントマイム","マジック","バルーン","からくり人形","伝統","太鼓","アイドル","プロレス","金粉","屋外","昼公演","夜公演","大型演目","短時間演目","特別企画"];
 const GENRE_ORDER = ["大道芸","パフォーマンス","音楽","ダンス","身体表現","ジャグリング","サーカス","コメディ","パントマイム","マジック","バルーン","スタチュー","ロービング","からくり","伝統芸能","演芸","太鼓","山車囃子","木遣り","舞踏","アイドル","プロレス","似顔絵","金粉ショウ","特別企画","式典","ショー","ライブ","ワークショップ","その他"];
 const genreOrder = (g) => { const i=GENRE_ORDER.indexOf(g); return i<0 ? 999 : i; };
@@ -151,6 +152,14 @@ function renderNextWatch(now){
       (favoritesNext.length?'<div class="next-favorite-note">★ お気に入りの次回: '+favoritesNext.map(e=>esc(e.start_time.slice(0,5))+" "+esc(e.title||e.performer)).join(" ／ ")+'</div>':"")+
     '</div>';
 }
+function renderFavoriteNow(d) {
+  const section=$("#favoriteNowSection");
+  if(!section) return;
+  const today=unique(events.filter(e=>e.event_date===dateKey(d)&&favs.has(e.id)));
+  const visible=today.filter(e=>status(e,d)!=="done").sort((a,b)=>start(a)-start(b));
+  section.innerHTML='<div class="section-title"><h2>★ お気に入りの今日</h2></div>'+
+    (visible.length?'<div class="event-list">'+visible.map(e=>card(e,true)).join("")+'</div>':'<div class="empty">今日のお気に入りイベントはありません。</div>');
+}
 function renderNow() {
   const d=new Date();
   $("#nowClock").textContent=d.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
@@ -160,7 +169,9 @@ function renderNow() {
   const next=today.filter(e=>status(e,d)==="next").sort((a,b)=>start(a)-start(b)).slice(0,6);
   $("#nowSection").innerHTML=live.length?'<div class="now-label">🟢 いま開催中</div>'+live.map(e=>card(e,true)).join(""):'<div class="empty"><strong>いま開催中の登録イベントはありません</strong><br><small>下の「次に何を見る？」を確認しよう。</small></div>';
   renderNextWatch(d);
-  $("#todayList").innerHTML=today.length?today.sort((a,b)=>start(a)-start(b)).map(e=>card(e)).join(""):'<div class="empty">今日は祭りの登録イベント日ではありません。</div>';
+  renderFavoriteNow(d);
+  const timeline=hideCompleted?today.filter(e=>status(e,d)!=="done"):today;
+  $("#todayList").innerHTML=timeline.length?timeline.sort((a,b)=>start(a)-start(b)).map(e=>card(e)).join(""):'<div class="empty">今日は表示できる未終了イベントがありません。</div>';
   bindFavs();
 }
 function renderVenueFilter() {
@@ -174,7 +185,8 @@ function renderVenueFilter() {
 function renderSchedule() {
   const d=$("#dateFilter").value;
   const venueId=$("#venueFilter").value;
-  const a=unique(events.filter(e=>(!d||e.event_date===d)&&(!venueId||String(e.venue_id)===venueId)))
+  const now=new Date();
+  const a=unique(events.filter(e=>(!d||e.event_date===d)&&(!venueId||String(e.venue_id)===venueId)&&(!hideCompleted||status(e,now)!=="done")))
     .sort((x,y)=>(x.event_date+x.start_time).localeCompare(y.event_date+y.start_time));
   $("#scheduleList").innerHTML=a.length?a.map(e=>card(e,false,!d)).join(""):'<div class="empty">この条件のイベントはありません。</div>';
   bindFavs();
@@ -589,6 +601,11 @@ $("#searchClear").onclick=()=>{
   renderSearch();
 };
 $("#refreshBtn").onclick=load;
+$("#hideCompleted").onchange=()=>{
+  hideCompleted=$("#hideCompleted").checked;
+  localStorage.setItem("osu-hide-completed",String(hideCompleted));
+  renderNow(); renderSchedule();
+};
 
 document.addEventListener("click",ev=>{
   const a=ev.target.closest("a");
@@ -609,6 +626,17 @@ function trackSearchUse(kind){
 }
 $("#searchKeyword").addEventListener("input",()=>trackSearchUse("events"));
 $("#searchPerformerKeyword").addEventListener("input",()=>trackSearchUse("performers"));
+function updateConnectionStatus(){
+  const el=$("#connectionStatus");
+  if(!el) return;
+  const online=navigator.onLine;
+  el.className="connection-status "+(online?"online":"offline");
+  el.textContent=online?"🟢 オンライン":"🟠 オフライン（保存済みデータ）";
+}
+window.addEventListener("online",updateConnectionStatus);
+window.addEventListener("offline",updateConnectionStatus);
+updateConnectionStatus();
+
 async function load() {
   try {
     const f=await api("festivals","select=id&name=eq.%E7%AC%AC47%E5%9B%9E%20%E5%A4%A7%E9%A0%88%E5%A4%A7%E9%81%93%E7%94%BA%E4%BA%BA%E7%A5%AD&limit=1");
@@ -642,9 +670,15 @@ async function load() {
     renderNow(); renderSchedule(); renderVenues(); renderSearch(); renderPerformerSearch();
   } catch(e) {
     console.error(e);
-    $("#nowSection").innerHTML='<div class="empty">データを読み込めませんでした。<br><small>'+esc(e.message)+'</small></div>';
+    updateConnectionStatus();
+    if(!navigator.onLine){
+      $("#nowSection").innerHTML='<div class="empty">オフラインのため最新データを取得できません。<br><small>表示中のアプリは保存済みです。</small></div>';
+    } else {
+      $("#nowSection").innerHTML='<div class="empty">データを読み込めませんでした。<br><small>'+esc(e.message)+'</small></div>';
+    }
   }
 }
+$("#hideCompleted").checked=hideCompleted;
 trackUsage("app_open");
 trackUsage("page_view","page","home");
 load();
