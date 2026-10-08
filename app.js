@@ -631,7 +631,7 @@ function updateConnectionStatus(){
   if(!el) return;
   const online=navigator.onLine;
   el.className="connection-status "+(online?"online":"offline");
-  el.textContent=online?"🟢 オンライン":"🟠 オフライン（保存済みデータ）";
+  el.textContent=online?"🟢 オンライン":"🟠 オフライン";
 }
 window.addEventListener("online",updateConnectionStatus);
 window.addEventListener("offline",updateConnectionStatus);
