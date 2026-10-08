@@ -466,15 +466,20 @@ function bindFavoriteLongPress() {
       longPressed=false;
       timer=setTimeout(()=>{
         longPressed=true;
-        document.querySelectorAll(".favorite-event-actions").forEach(el=>el.remove());
+        if(navigator.vibrate) navigator.vibrate(40);
+        document.querySelectorAll(".favorite-event-popup").forEach(el=>el.remove());
         const eventId=Number(card.dataset.eventId);
         const e=events.find(x=>Number(x.id)===eventId);
         if(!e) return;
-        const actions=document.createElement("div");
-        actions.className="favorite-event-actions";
-        actions.innerHTML='<button type="button" data-favorite-timetable>◷ タイムテーブル</button><button type="button" data-favorite-map>⌖ 地図</button>';
-        card.appendChild(actions);
-        actions.querySelector("[data-favorite-timetable]").onclick=()=>{
+        const popup=document.createElement("div");
+        popup.className="favorite-event-popup";
+        popup.innerHTML='<div class="favorite-event-popup-backdrop"></div><div class="favorite-event-popup-card"><div class="favorite-event-popup-title">このイベント</div><button type="button" data-favorite-timetable>◷ タイムテーブル</button><button type="button" data-favorite-map>⌖ 地図</button><button type="button" class="favorite-event-popup-cancel">キャンセル</button></div>';
+        document.body.appendChild(popup);
+        const close=()=>popup.remove();
+        popup.querySelector(".favorite-event-popup-backdrop").onclick=close;
+        popup.querySelector(".favorite-event-popup-cancel").onclick=close;
+        popup.querySelector("[data-favorite-timetable]").onclick=()=>{
+          close();
           if($("#dateFilter")) $("#dateFilter").value=e.event_date||"";
           if($("#venueFilter")) $("#venueFilter").value=e.venue_id!=null?String(e.venue_id):"";
           document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="schedule"));
@@ -482,7 +487,8 @@ function bindFavoriteLongPress() {
           renderSchedule();
           window.scrollTo({top:0,behavior:"smooth"});
         };
-        actions.querySelector("[data-favorite-map]").onclick=()=>{
+        popup.querySelector("[data-favorite-map]").onclick=()=>{
+          close();
           document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="venues"));
           document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page==="venues"));
           renderVenues();
