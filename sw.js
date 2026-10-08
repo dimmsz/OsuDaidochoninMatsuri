@@ -1,8 +1,8 @@
-const CACHE="osu-now-v43";
+const CACHE="osu-now-v44";
 
 self.addEventListener("install",e=>{
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(["./","./index.html","./app.js?v=1.0.20","./style.css?v=1.0.20","./performers.html","./performers.js","./manifest.webmanifest"])));
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(["./","./index.html","./app.js?v=1.0.21","./style.css?v=1.0.21","./performers.html","./performers.js","./manifest.webmanifest"])));
 });
 
 self.addEventListener("activate",e=>{
