@@ -3,7 +3,9 @@ const SUPABASE_KEY = "sb_publishable_1xXRoGWj2Kz-mIlUB_AvWw_Ge8odQN_";
 const $ = (s) => document.querySelector(s);
 let events = [], venues = [], performers = [], performersById = new Map(), linksByEvent = new Map(), tagsByEvent = new Map(), venueMap = null, venueMarkers = [], venueMarkerById = new Map(), headquartersMarker = null, routeLine = null, currentLocationMarker = null, routeTargetId = null;
 const favs = new Set(JSON.parse(localStorage.getItem("osu-favorites") || "[]"));
-const PRESET_TAGS = ["大道芸","屋外","昼公演","夜公演","身体表現","音楽","ダンス","ジャグリング","サーカス","コメディ","マジック","伝統","パントマイム","バルーン","からくり人形","太鼓","アイドル","プロレス","金粉","特別企画","大型演目","短時間演目"];
+const PRESET_TAGS = ["大道芸","パフォーマンス","身体表現","音楽","ダンス","サーカス","ジャグリング","コメディ","パントマイム","マジック","バルーン","からくり人形","伝統","太鼓","アイドル","プロレス","金粉","屋外","昼公演","夜公演","大型演目","短時間演目","特別企画"];
+const GENRE_ORDER = ["大道芸","パフォーマンス","音楽","ダンス","身体表現","ジャグリング","サーカス","コメディ","パントマイム","マジック","バルーン","スタチュー","ロービング","からくり","伝統芸能","演芸","太鼓","山車囃子","木遣り","舞踏","アイドル","プロレス","似顔絵","金粉ショウ","特別企画","式典","ショー","ライブ","ワークショップ","その他"];
+const genreOrder = (g) => { const i=GENRE_ORDER.indexOf(g); return i<0 ? 999 : i; };
 
 async function api(table, params="") {
   const r = await fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + params, {
@@ -218,7 +220,7 @@ function renderSearchOptions(){
   const tagSelect=$("#searchTag");
   if(genreSelect){
     const current=genreSelect.value;
-    const genres=[...new Set(events.map(e=>e.genre).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
+    const genres=[...new Set(events.map(e=>e.genre).filter(Boolean))].sort((a,b)=>genreOrder(a)-genreOrder(b)||a.localeCompare(b,"ja"));
     genreSelect.innerHTML='<option value="">すべて</option>'+genres.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join("");
     if(genres.includes(current)) genreSelect.value=current;
   }
