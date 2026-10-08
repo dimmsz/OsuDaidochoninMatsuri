@@ -14,6 +14,36 @@ async function api(table, params="") {
   if (!r.ok) throw Error(table + ": " + r.status);
   return r.json();
 }
+
+const USAGE_SESSION_KEY = "osu-usage-session";
+function usageSessionId(){
+  let id=localStorage.getItem(USAGE_SESSION_KEY);
+  if(!id){
+    id=crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+"-"+Math.random().toString(36).slice(2);
+    localStorage.setItem(USAGE_SESSION_KEY,id);
+  }
+  return id;
+}
+function trackUsage(eventName,targetType=null,targetId=null,metadata={}){
+  fetch(SUPABASE_URL+"/rest/v1/app_usage_events",{
+    method:"POST",
+    keepalive:true,
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json",
+      Prefer:"return=minimal"
+    },
+    body:JSON.stringify({
+      session_id:usageSessionId(),
+      event_name:eventName,
+      page:document.querySelector(".page.active")?.id||"home",
+      target_type:targetType,
+      target_id:targetId==null?null:String(targetId),
+      metadata
+    })
+  }).catch(()=>{});
+}
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function dateKey(d=new Date()) {
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -200,6 +230,7 @@ function renderPerformerSearch(){
     if(allFavorite && !window.confirm("この出演者の出演スケジュールをすべてお気に入りから解除しますか？")) return;
     schedule.forEach(e=>allFavorite?favs.delete(e.id):favs.add(e.id));
     localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
+    trackUsage(allFavorite?"performer_favorite_remove":"performer_favorite_add","performer",performerId,{event_count:schedule.length});
     renderPerformerSearch();
     renderFavorites();
   });
@@ -516,8 +547,10 @@ function bindFavoriteLongPress() {
 function bindFavs() {
   document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{
     const id=Number(b.dataset.fav);
-    favs.has(id)?favs.delete(id):favs.add(id);
+    const adding=!favs.has(id);
+    adding?favs.add(id):favs.delete(id);
     localStorage.setItem("osu-favorites",JSON.stringify([...favs]));
+    trackUsage(adding?"favorite_add":"favorite_remove","event",id);
     renderNow(); renderSchedule(); renderFavorites();
     if($("#search")?.classList.contains("active")) renderSearch();
   });
@@ -525,6 +558,7 @@ function bindFavs() {
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===b.dataset.page));
   document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n===b));
+  trackUsage("page_view","page",b.dataset.page);
   if(b.dataset.page==="schedule")renderSchedule();
   if(b.dataset.page==="venues")renderVenues();
   if(b.dataset.page==="search"){ renderSearchOptions(); renderPerformerSearchOptions(); renderSearch(); renderPerformerSearch(); }
@@ -535,7 +569,10 @@ $("#venueFilter").onchange=renderSchedule;
 $("#searchGenre").onchange=renderSearch;
 $("#searchTag").onchange=renderSearch;
 $("#searchKeyword").oninput=renderSearch;
-document.querySelectorAll("[data-search-tab]").forEach(b=>b.onclick=()=>setSearchTab(b.dataset.searchTab));
+document.querySelectorAll("[data-search-tab]").forEach(b=>b.onclick=()=>{
+  setSearchTab(b.dataset.searchTab);
+  trackUsage("search_tab","search",b.dataset.searchTab);
+});
 $("#searchPerformerKeyword").oninput=renderPerformerSearch;
 $("#searchPerformerGenre").onchange=renderPerformerSearch;
 $("#searchPerformerTag").onchange=renderPerformerSearch;
@@ -552,6 +589,26 @@ $("#searchClear").onclick=()=>{
   renderSearch();
 };
 $("#refreshBtn").onclick=load;
+
+document.addEventListener("click",ev=>{
+  const a=ev.target.closest("a");
+  if(a){
+    const m=a.getAttribute("href")?.match(/^performers\.html\?id=(\d+)$/);
+    if(m) trackUsage("performer_view","performer",m[1]);
+  }
+  const venue=ev.target.closest("[data-venue-id]");
+  if(venue) trackUsage("venue_view","venue",venue.dataset.venueId);
+  const route=ev.target.closest("[data-route]");
+  if(route) trackUsage("route_view","route",route.dataset.route||"");
+});
+
+let usageSearchTimer=null;
+function trackSearchUse(kind){
+  clearTimeout(usageSearchTimer);
+  usageSearchTimer=setTimeout(()=>trackUsage("search_use","search",kind),800);
+}
+$("#searchKeyword").addEventListener("input",()=>trackSearchUse("events"));
+$("#searchPerformerKeyword").addEventListener("input",()=>trackSearchUse("performers"));
 async function load() {
   try {
     const f=await api("festivals","select=id&name=eq.%E7%AC%AC47%E5%9B%9E%20%E5%A4%A7%E9%A0%88%E5%A4%A7%E9%81%93%E7%94%BA%E4%BA%BA%E7%A5%AD&limit=1");
@@ -588,5 +645,7 @@ async function load() {
     $("#nowSection").innerHTML='<div class="empty">データを読み込めませんでした。<br><small>'+esc(e.message)+'</small></div>';
   }
 }
+trackUsage("app_open");
+trackUsage("page_view","page","home");
 load();
 setInterval(renderNow,30000);
