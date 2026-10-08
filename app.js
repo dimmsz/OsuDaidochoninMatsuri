@@ -612,9 +612,32 @@ $("#aboutBtn").onclick=()=>{
   trackUsage("about_view","page","about");
 };
 $("#aboutClose").onclick=closeAbout;
+const clearFavoritesModal=$("#clearFavoritesModal");
+const closeClearFavorites=()=>{
+  if(!clearFavoritesModal) return;
+  clearFavoritesModal.hidden=true;
+};
+$("#clearFavoritesBtn").onclick=()=>{
+  if(!clearFavoritesModal) return;
+  if(!favs.size) return;
+  clearFavoritesModal.hidden=false;
+};
+$("#clearFavoritesNo").onclick=closeClearFavorites;
+$("#clearFavoritesYes").onclick=()=>{
+  favs.clear();
+  localStorage.setItem("osu-favorites","[]");
+  trackUsage("favorite_clear_all","favorites",null);
+  closeClearFavorites();
+  renderNow();
+  renderSchedule();
+  renderFavorites();
+  if($("#search")?.classList.contains("active")) renderSearch();
+};
+document.querySelector("[data-clear-favorites-close]")?.addEventListener("click",closeClearFavorites);
 document.querySelector("[data-about-close]")?.addEventListener("click",closeAbout);
 document.addEventListener("keydown",ev=>{
   if(ev.key==="Escape" && aboutModal && !aboutModal.hidden) closeAbout();
+  if(ev.key==="Escape" && clearFavoritesModal && !clearFavoritesModal.hidden) closeClearFavorites();
 });
 
 $("#hideCompleted").onchange=()=>{
