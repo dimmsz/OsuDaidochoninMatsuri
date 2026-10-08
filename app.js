@@ -247,7 +247,7 @@ function renderSearch(){
     return true;
   })).sort((x,y)=>(x.event_date+x.start_time).localeCompare(y.event_date+y.start_time));
   $("#searchSummary").textContent=result.length+"件";
-  $("#searchList").innerHTML=result.length?result.map(card).join(""):'<div class="empty">条件に一致するイベントはありません。</div>';
+  $("#searchList").innerHTML=result.length?result.map(e=>card(e)).join(""):'<div class="empty">条件に一致するイベントはありません。</div>';
   bindFavs();
 }
 function renderVenues() {
