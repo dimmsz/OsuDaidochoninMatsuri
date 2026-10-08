@@ -64,7 +64,8 @@ function card(e,now=false,showDate=false,conflict=false) {
     ? '<div class="event-tags">'+(genre?'<span class="event-genre">'+esc(genre)+'</span>':"")+eventTags.filter(t=>t!==genre).slice(0,4).map(t=>'<span class="event-tag">'+esc(t)+'</span>').join("")+'</div>'
     : "";
   const titleSub=e.performer&&e.title!==e.performer?e.title:"";
-  return '<article class="event '+(now?"event-now ":"")+(conflict?"event-conflict":"")+'"><div class="event-time">'+(showDate?'<div class="event-date-label">'+esc(scheduleDateText(e.event_date))+'</div>':"")+t+'<small>'+en+'</small></div><div>'+
+  const done=status(e)==="done";
+  return '<article class="event '+(now?"event-now ":"")+(done?"event-done ":"")+(conflict?"event-conflict":"")+'"><div class="event-time">'+(showDate?'<div class="event-date-label">'+esc(scheduleDateText(e.event_date))+'</div>':"")+t+'<small>'+en+'</small></div><div>'+
     performerMarkup(e)+
     (titleSub?'<div class="event-subtitle">'+esc(titleSub)+'</div>':"")+
     (now && status(e)==="live"?'<span class="live-pill">● 開催中</span>':!now && status(e)==="next"?'<span class="next-pill">このあと</span>':"")+
