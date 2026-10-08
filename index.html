@@ -7,24 +7,25 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="style.css?v=1.0.20">
+<link rel="stylesheet" href="style.css?v=1.0.21">
 <title>大須大道町人祭 NOW</title>
 </head>
 <body>
 <header class="appbar">
-  <div><div class="eyebrow">第47回</div><h1>大須大道町人祭 <span>NOW</span></h1><div class="dates">10/9(金) 前夜祭　10/10(土)・11(日)</div></div>
+  <div><div class="eyebrow">第47回・非公式アプリ</div><h1>大須大道町人祭 <span>NOW</span></h1><div class="dates">10/9(金) 前夜祭　10/10(土)・11(日)</div><div id="connectionStatus" class="connection-status" aria-live="polite"></div></div>
 </header>
 <main>
 <section id="home" class="page active">
   <div class="now-head"><div><div class="eyebrow">いま大須で</div><h2 id="nowClock">--:--</h2></div><div id="nowDate" class="now-date">----</div></div>
   <div id="nowSection"></div>
+  <section id="favoriteNowSection" class="favorite-now-section"></section>
   <section id="nextWatchSection" class="next-watch-section"></section>
   <div class="section-title"><h2>今日のタイムライン</h2><button id="refreshBtn" class="text-btn">↻ 更新</button></div>
   <div id="todayList" class="event-list"></div>
   <div class="app-version">v1.0.20</div>
 </section>
 <section id="schedule" class="page">
-  <div class="section-head"><h2>タイムテーブル</h2></div>
+  <div class="section-head"><h2>タイムテーブル</h2><label class="hide-completed-label"><input id="hideCompleted" type="checkbox"> 終了したイベントを隠す</label></div>
   <div class="schedule-filters">
     <label>日付<select id="dateFilter"><option value="">すべての日</option><option value="2026-10-09">10/9(金)</option><option value="2026-10-10">10/10(土)</option><option value="2026-10-11">10/11(日)</option></select></label>
     <label>会場<select id="venueFilter"><option value="">すべての会場</option></select></label>
@@ -63,6 +64,6 @@
 </main>
 <nav class="bottom-nav"><button class="nav active" data-page="home">●<span>NOW</span></button><button class="nav" data-page="schedule">◷<span class="long-label">タイムテーブル</span></button><button class="nav" data-page="venues">⌖<span>会場</span></button><button class="nav" data-page="search">🔎<span>検索</span></button><button class="nav" data-page="favorites">★<span>お気に入り</span></button></nav>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script type="module" src="app.js?v=1.0.20"></script>
+<script type="module" src="app.js?v=1.0.21"></script>
 <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
 </body></html>
