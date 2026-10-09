@@ -60,7 +60,7 @@ function venueLabel(e) {
   return "📍 "+(v?.name||"会場未定")+(e.venue_section?"・"+e.venue_section:"");
 }
 function status(e,d=new Date()) {
-  if(e.event_date!==dateKey(d)) return "other";
+  if(e.event_date!==dateKey(d) || !e.start_time) return "other";
   const n=d.getHours()*60+d.getMinutes()+d.getSeconds()/60, s=start(e);
   return n>=s && n<end(e) ? "live" : n<s ? "next" : "done";
 }
@@ -107,6 +107,7 @@ function card(e,now=false,showDate=false,conflict=false) {
     '</div><button class="fav '+(fav?"on":"")+'" data-fav="'+e.id+'">'+(fav?"★":"☆")+'</button></article>';
 }
 function eventDateTime(e){
+  if(!e?.event_date || !e?.start_time) return null;
   const [y,m,d]=e.event_date.split("-").map(Number);
   const [hh,mm]=e.start_time.slice(0,5).split(":").map(Number);
   return new Date(y,m-1,d,hh,mm,0,0);
@@ -123,7 +124,7 @@ function formatCountdown(target, now){
 }
 function nextUpcoming(now){
   return unique(events)
-    .filter(e=>eventDateTime(e)>=now)
+    .filter(e=>{ const dt=eventDateTime(e); return dt!==null && dt>=now; })
     .sort((a,b)=>eventDateTime(a)-eventDateTime(b)||start(a)-start(b));
 }
 function renderNextWatch(now){
@@ -149,7 +150,7 @@ function renderNextWatch(now){
         '<div class="next-watch-main"><div class="next-watch-time">'+esc(scheduleDateText(e.event_date))+' '+esc(e.start_time?.slice(0,5)||"")+'</div>'+performerMarkup(e)+(e.title&&e.title!==e.performer?'<div class="next-watch-act">'+esc(e.title)+'</div>':"")+'<div class="meta">'+esc(venueLabel(e))+'</div></div>'+
         '<button class="fav '+(favs.has(e.id)?"on":"")+'" data-fav="'+e.id+'">'+(favs.has(e.id)?"★":"☆")+'</button>'+
       '</div>').join("")+'</div>'+
-      (favoritesNext.length?'<div class="next-favorite-note">★ お気に入りの次回: '+favoritesNext.map(e=>esc(e.start_time.slice(0,5))+" "+esc(e.title||e.performer)).join(" ／ ")+'</div>':"")+
+      (favoritesNext.length?'<div class="next-favorite-note">★ お気に入りの次回: '+favoritesNext.map(e=>esc(e.start_time?.slice(0,5)||"時刻未定")+" "+esc(e.title||e.performer)).join(" ／ ")+'</div>':"")+
     '</div>';
 }
 function renderFavoriteNow(d) {
