@@ -477,7 +477,7 @@ function highlightVenue(id){
   const el=$("#venue-"+id); if(el) el.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function renderFavorites() {
-  const a=unique(events.filter(e=>favs.has(e.id)));
+  const a=unique(events.filter(e=>favs.has(e.id)&&(!hideCompleted||status(e)!=="done")));
   const conflictIds=new Set();
   for(let i=0;i<a.length;i++){
     for(let j=i+1;j<a.length;j++){
@@ -643,8 +643,16 @@ document.addEventListener("keydown",ev=>{
 
 $("#hideCompleted").onchange=()=>{
   hideCompleted=$("#hideCompleted").checked;
+  $("#hideCompletedFavorites").checked=hideCompleted;
   localStorage.setItem("osu-hide-completed",String(hideCompleted));
-  renderNow(); renderSchedule();
+  renderNow(); renderSchedule(); renderFavorites();
+};
+$("#hideCompletedFavorites").onchange=()=>{
+  hideCompleted=$("#hideCompletedFavorites").checked;
+  $("#hideCompleted").checked=hideCompleted;
+$("#hideCompletedFavorites").checked=hideCompleted;
+  localStorage.setItem("osu-hide-completed",String(hideCompleted));
+  renderNow(); renderSchedule(); renderFavorites();
 };
 
 document.addEventListener("click",ev=>{
