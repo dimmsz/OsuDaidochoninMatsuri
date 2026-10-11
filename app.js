@@ -187,7 +187,7 @@ function renderSchedule() {
   const d=$("#dateFilter").value;
   const venueId=$("#venueFilter").value;
   const now=new Date();
-  const a=unique(events.filter(e=>(!d||e.event_date===d)&&(!venueId||String(e.venue_id)===venueId)&&(!hideCompleted||status(e,now)!=="done")))
+  const a=unique(events.filter(e=>(!d||e.event_date===d)&&(!venueId||String(e.venue_id)===venueId)&&(!hideCompleted||!isCompletedEvent(e,now))))
     .sort((x,y)=>(x.event_date+x.start_time).localeCompare(y.event_date+y.start_time));
   $("#scheduleList").innerHTML=a.length?a.map(e=>card(e,false,!d)).join(""):'<div class="empty">この条件のイベントはありません。</div>';
   bindFavs();
