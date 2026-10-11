@@ -476,8 +476,16 @@ function highlightVenue(id){
   document.querySelectorAll(".venue").forEach(el=>el.classList.toggle("selected",Number(el.dataset.venueId)===Number(id)));
   const el=$("#venue-"+id); if(el) el.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
+function isCompletedEvent(e, now=new Date(), today=dateKey(now)) {
+  if(!e.event_date) return false;
+  if(e.event_date<today) return true;
+  if(e.event_date>today) return false;
+  return !!e.start_time && status(e,now)==="done";
+}
 function renderFavorites() {
-  const a=unique(events.filter(e=>favs.has(e.id)&&(!hideCompleted||status(e)!=="done")));
+  const now=new Date();
+  const today=dateKey(now);
+  const a=unique(events.filter(e=>favs.has(e.id)&&(!hideCompleted||!isCompletedEvent(e,now,today))));
   const conflictIds=new Set();
   for(let i=0;i<a.length;i++){
     for(let j=i+1;j<a.length;j++){
